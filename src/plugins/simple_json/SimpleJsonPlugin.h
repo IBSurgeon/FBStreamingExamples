@@ -10,6 +10,7 @@
 #include <memory>
 #include <stack>
 #include <regex>
+#include <filesystem>
 
 #include <nlohmann/json.hpp>
 #include "../../include/ReplicateApplierInterface.h"
@@ -18,6 +19,7 @@
 using namespace Firebird;
 
 using json = nlohmann::json;
+namespace fs = std::filesystem;
 
 namespace SimpleJsonPlugin
 {
@@ -74,9 +76,10 @@ namespace SimpleJsonPlugin
 		bool m_dumpBlobs = false;
 		bool m_registerDDL = true;
 		bool m_registerSequence = true;
+	    fs::path m_outputPath;
 
 		class PluginImp;
-//		unique_ptr<PluginImp> pImp = nullptr;
+		unique_ptr<PluginImp> pImp = nullptr;
 	};
 
 	class ReplTransaction final : public IApplierTransactionImpl<ReplTransaction, ThrowStatusWrapper>

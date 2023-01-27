@@ -1,6 +1,7 @@
 #include "SimpleJsonPlugin.h"
 
 #include <sstream>
+#include <fstream>
 #include "../../common/FBAutoPtr.h"
 #include "../../common/Utils.h"
 #include "../../common/FBCharsetInfo.h"
@@ -17,6 +18,7 @@ struct vary
 
 namespace SimpleJsonPlugin
 {
+
 	static const char* states[] =
 	{
 		"free",
@@ -24,6 +26,54 @@ namespace SimpleJsonPlugin
 		"full",
 		"archive"
 	};
+
+	class SimpleJsonPlugin::PluginImp
+	{
+	private:
+		json doc;
+	public:
+		PluginImp();
+		void writeHeader(const SegmentHeaderInfo& headerInfo);
+		void writeEvent(const json& event);
+		void saveToFile(const fs::path& fileName);
+	};
+
+	SimpleJsonPlugin::PluginImp::PluginImp()
+		: doc()
+	{
+	}
+
+	void SimpleJsonPlugin::PluginImp::writeHeader(const SegmentHeaderInfo& headerInfo)
+	{
+		// reset
+		doc = {};
+		
+		doc["header"] = {};
+		doc["events"] = json::array();
+
+		json header;
+		header["version"] = headerInfo.version;
+		header["guid"] = headerInfo.guid;
+		header["sequence"] = headerInfo.sequence;
+		header["state"] = states[headerInfo.state];
+
+		doc["header"] = header;
+	}
+
+	void SimpleJsonPlugin::PluginImp::writeEvent(const json& event)
+	{
+		doc["events"].push_back(event);
+	}
+
+	void SimpleJsonPlugin::PluginImp::saveToFile(const fs::path& fileName)
+	{
+		std::ofstream o(fileName);
+		o << std::setw(4) << doc << std::endl;
+		o.close();
+
+		// reset
+		doc = {};
+	}
 
 	SimpleJsonPlugin::SimpleJsonPlugin(IMaster* master, IConfig* config, IStreamLogger* logger)
 		: m_master(master)
@@ -41,7 +91,8 @@ namespace SimpleJsonPlugin
 		, m_dumpBlobs(false)
 		, m_registerDDL(true)
 		, m_registerSequence(true)
-//		, pImp(make_unique<PluginImp>())
+		, m_outputPath()
+		, pImp(make_unique<PluginImp>())
 	{
 		m_config->addRef();
 		m_logger->addRef();
@@ -61,6 +112,11 @@ namespace SimpleJsonPlugin
 		AutoRelease<IConfigEntry> ceSequenceEvents(m_config->find(&status, "register_sequence_events"));
 		if (ceSequenceEvents) {
 			m_registerSequence = ceSequenceEvents->getBoolValue();
+		}
+
+		AutoRelease<IConfigEntry> ceOutputDir(m_config->find(&status, "outputDir"));
+		if (ceOutputDir) {
+			m_outputPath.assign(ceOutputDir->getValue());
 		}
 
 	}
@@ -168,10 +224,16 @@ namespace SimpleJsonPlugin
 
 			m_logger->debug(ss.str().c_str());
 		}
+
+		pImp->writeHeader(m_segmentHeader);
 	}
 
 	void SimpleJsonPlugin::finishSegment(ThrowStatusWrapper* status)
 	{
+		string segmentName = m_segmentHeader.name;
+		fs::path fileName = m_outputPath / (segmentName + ".json");
+
+		pImp->saveToFile(fileName);
 	}
 
 	IApplierTransaction* SimpleJsonPlugin::startTransaction(ThrowStatusWrapper* status, ISC_INT64 number)
@@ -203,7 +265,7 @@ namespace SimpleJsonPlugin
 			m_logger->debug(message.c_str());
 		}
 
-		//pImp->publish(jEvent.dump());
+		pImp->writeEvent(jEvent);
 	}
 
 	FB_BOOLEAN SimpleJsonPlugin::matchTable(ThrowStatusWrapper* status, const char* relationName)
@@ -298,10 +360,10 @@ namespace SimpleJsonPlugin
 					const std::string message = "Events: "s + std::to_string(events->size());
 					m_applier->m_logger->debug(message.c_str());
 				}
-				// publish to RabbitMQ
+				// add events
 				try {
 					for (const auto& ev : *events) {
-						//m_applier->pImp->publish(ev.dump());
+						m_applier->pImp->writeEvent(ev);
 					}
 				}
 				catch (const std::exception& e) {
