@@ -10,6 +10,6 @@ extern "C"
 	FB_DLL_EXPORT void fb_stream_plugin(IMaster* master, IStreamPluginManager* pm)
 	{
 		auto factory = new SimpleJsonPlugin::SimpleJsonPluginFactory(master);
-		pm->registerPluginFactory("simplejson_plugin", factory);
+		pm->registerPluginFactory("SimpleJsonPlugin", factory);
 	}
 }
