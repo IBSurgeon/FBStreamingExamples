@@ -46,6 +46,7 @@ namespace SimpleJsonPlugin
 		FB_BOOLEAN init(ThrowStatusWrapper* status, IAttachment* attachment) override;
 		void finish(ThrowStatusWrapper* status) override;
 		void startSegment(ThrowStatusWrapper* status, SegmentHeaderInfo* segmentHeader) override;
+		void finishSegment(ThrowStatusWrapper* status) override;
 		IApplierTransaction* startTransaction(ThrowStatusWrapper* status, ISC_INT64 number) override;
 		void setSequence(ThrowStatusWrapper* status, const char* name, ISC_INT64 value) override;
 		FB_BOOLEAN matchTable(ThrowStatusWrapper* status, const char* relationName) override;

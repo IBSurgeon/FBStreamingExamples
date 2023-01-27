@@ -170,6 +170,10 @@ namespace SimpleJsonPlugin
 		}
 	}
 
+	void SimpleJsonPlugin::finishSegment(ThrowStatusWrapper* status)
+	{
+	}
+
 	IApplierTransaction* SimpleJsonPlugin::startTransaction(ThrowStatusWrapper* status, ISC_INT64 number)
 	{
 		m_logger->debug(vformat("[%" UQUADFORMAT "] START", number).c_str());

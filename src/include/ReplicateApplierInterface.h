@@ -65,16 +65,17 @@ namespace Firebird
 	public:
 		struct VTable : public IPluginBase::VTable
 		{
-			FB_BOOLEAN(CLOOP_CARG* init)(IReplicateApplierPlugin* self, IStatus* status, IAttachment* attachment) throw();
-			void (CLOOP_CARG* finish)(IReplicateApplierPlugin* self, IStatus* status) throw();
-			void (CLOOP_CARG* startSegment)(IReplicateApplierPlugin* self, IStatus* status, SegmentHeaderInfo* segmentHeader) throw();
-			IApplierTransaction* (CLOOP_CARG* startTransaction)(IReplicateApplierPlugin* self, IStatus* status, ISC_INT64 number) throw();
-			void (CLOOP_CARG* setSequence)(IReplicateApplierPlugin* self, IStatus* status, const char* name, ISC_INT64 value) throw();
-			FB_BOOLEAN(CLOOP_CARG* matchTable)(IReplicateApplierPlugin* self, IStatus* status, const char* relationName) throw();
-			IApplierTransaction* (CLOOP_CARG* getTransaction)(IReplicateApplierPlugin* self, IStatus* status, ISC_INT64 number) throw();
-			void (CLOOP_CARG* cleanupTransaction)(IReplicateApplierPlugin* self, IStatus* status, ISC_INT64 number) throw();
-			void (CLOOP_CARG* cleanupTransactions)(IReplicateApplierPlugin* self, IStatus* status) throw();
-			void (CLOOP_CARG* log)(IReplicateApplierPlugin* self, unsigned level, const char* message) throw();
+			FB_BOOLEAN (CLOOP_CARG *init)(IReplicateApplierPlugin* self, IStatus* status, IAttachment* attachment) throw();
+			void (CLOOP_CARG *finish)(IReplicateApplierPlugin* self, IStatus* status) throw();
+			void (CLOOP_CARG *startSegment)(IReplicateApplierPlugin* self, IStatus* status, SegmentHeaderInfo* segmentHeader) throw();
+			void (CLOOP_CARG *finishSegment)(IReplicateApplierPlugin* self, IStatus* status) throw();
+			IApplierTransaction* (CLOOP_CARG *startTransaction)(IReplicateApplierPlugin* self, IStatus* status, ISC_INT64 number) throw();
+			void (CLOOP_CARG *setSequence)(IReplicateApplierPlugin* self, IStatus* status, const char* name, ISC_INT64 value) throw();
+			FB_BOOLEAN (CLOOP_CARG *matchTable)(IReplicateApplierPlugin* self, IStatus* status, const char* relationName) throw();
+			IApplierTransaction* (CLOOP_CARG *getTransaction)(IReplicateApplierPlugin* self, IStatus* status, ISC_INT64 number) throw();
+			void (CLOOP_CARG *cleanupTransaction)(IReplicateApplierPlugin* self, IStatus* status, ISC_INT64 number) throw();
+			void (CLOOP_CARG *cleanupTransactions)(IReplicateApplierPlugin* self, IStatus* status) throw();
+			void (CLOOP_CARG *log)(IReplicateApplierPlugin* self, unsigned level, const char* message) throw();
 		};
 
 	protected:
@@ -109,6 +110,13 @@ namespace Firebird
 		{
 			StatusType::clearException(status);
 			static_cast<VTable*>(this->cloopVTable)->startSegment(this, status, segmentHeader);
+			StatusType::checkException(status);
+		}
+
+		template <typename StatusType> void finishSegment(StatusType* status)
+		{
+			StatusType::clearException(status);
+			static_cast<VTable*>(this->cloopVTable)->finishSegment(this, status);
 			StatusType::checkException(status);
 		}
 
@@ -556,6 +564,7 @@ namespace Firebird
 					this->init = &Name::cloopinitDispatcher;
 					this->finish = &Name::cloopfinishDispatcher;
 					this->startSegment = &Name::cloopstartSegmentDispatcher;
+					this->finishSegment = &Name::cloopfinishSegmentDispatcher;
 					this->startTransaction = &Name::cloopstartTransactionDispatcher;
 					this->setSequence = &Name::cloopsetSequenceDispatcher;
 					this->matchTable = &Name::cloopmatchTableDispatcher;
@@ -605,6 +614,20 @@ namespace Firebird
 			try
 			{
 				static_cast<Name*>(self)->Name::startSegment(&status2, segmentHeader);
+			}
+			catch (...)
+			{
+				StatusType::catchException(&status2);
+			}
+		}
+
+		static void CLOOP_CARG cloopfinishSegmentDispatcher(IReplicateApplierPlugin* self, IStatus* status) throw()
+		{
+			StatusType status2(status);
+
+			try
+			{
+				static_cast<Name*>(self)->Name::finishSegment(&status2);
 			}
 			catch (...)
 			{
@@ -778,6 +801,7 @@ namespace Firebird
 		virtual FB_BOOLEAN init(StatusType* status, IAttachment* attachment) = 0;
 		virtual void finish(StatusType* status) = 0;
 		virtual void startSegment(StatusType* status, SegmentHeaderInfo* segmentHeader) = 0;
+		virtual void finishSegment(StatusType* status) = 0;
 		virtual IApplierTransaction* startTransaction(StatusType* status, ISC_INT64 number) = 0;
 		virtual void setSequence(StatusType* status, const char* name, ISC_INT64 value) = 0;
 		virtual FB_BOOLEAN matchTable(StatusType* status, const char* relationName) = 0;

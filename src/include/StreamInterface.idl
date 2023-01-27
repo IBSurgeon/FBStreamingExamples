@@ -1779,6 +1779,7 @@ interface ReplicateApplierPlugin: PluginBase
 	boolean init(Status status, Attachment attachment);
 	void finish(Status status);
 	void startSegment(Status status, SegmentHeaderInfo* segmentHeader);
+	void finishSegment(Status status);
 	ApplierTransaction startTransaction(Status status, int64 number);
 	void setSequence(Status status, const string name, int64 value);
 	boolean matchTable(Status status, const string relationName);
