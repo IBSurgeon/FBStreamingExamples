@@ -1,6 +1,22 @@
 # Firebird Streaming Examples
 
-Здесь размещаены примеры написания плагинов для службы `fb_svc_streaming`
+Здесь собраны примеры написания плагинов для технологии Firebird streaming.
 
-Скачать скомпилированный пример с наcтройками можно по ссылке [fb_streaming_test.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.0/fb_streaming_test.zip)
+Firebird streaming - это технология асинхронной публикации событий возникающих в процессе анализа журнала репликации.
+
+Для обработки событий используется служба (демон) `fb_streaming_svc`. Служба отслеживает новые файлы журнала репликации, анализирует их, и генерирует события, которые обрабатываются одним из плагинов. Подробное описание службы `fb_streaming_svc` находится в документе [Служба fb_streaming_svc](doc/fb_streaming_svc_ru.md).
+
+Кроме того, существует специальная утилита `fb_repl_print`, которая позволяет просматривать содержимое указанного файл журнала репликации, что позволяет производить отладку плагинов и непосредственно самой репликации. Подробное описание утилиты `fb_repl_print` находится в документе [Утилита fb_repl_print](doc/fb_repl_print_ru.md).
+
+Для получения бинарных файлов службы `fb_streaming_svc` и утилиты `fb_repl_print` обратитесь в компанию IBSurgeon.
+
+Процесс написание собственных плагинов подробно описан в документе [Написание собственного плагина для службы fb_streaming_svc](doc/writing_plugin_ru.md).
+
+В качестве примера плагина рассмотрим простую библиотеку, которая будет переводить исходные бинарные файлы журнала репликации в эквивалентный JSON формат и сохранять журналы в заданную директорию с тем же именем, но с расширением `.json`. Назовём данный плагин `SimpleJsonPlugin`.
+
+Скачать скомпилированный пример с конфигурацией можно по ссылкам:
+
+* [SimpleJsonPlugin_Win_x64.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.0/SimpleJsonPlugin_Win_x64.zip)
+* [SimpleJsonPlugin_Win_x86.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.0/SimpleJsonPlugin_Win_x64.zip)
+
 
