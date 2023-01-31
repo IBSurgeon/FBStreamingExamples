@@ -238,9 +238,14 @@ namespace SimpleJsonPlugin
 
 	IApplierTransaction* SimpleJsonPlugin::startTransaction(ThrowStatusWrapper* status, ISC_INT64 number)
 	{
-		m_logger->debug(vformat("[%" UQUADFORMAT "] START", number).c_str());
 		auto tra = new ReplTransaction(this, number);
 		m_transactions[number] = tra;
+
+		json jEvent;
+		jEvent["event"] = "START TRANSACTION";
+		jEvent["tnx"] = static_cast<int64_t>(number);
+		pImp->writeEvent(jEvent);
+
 		return tra;
 	}
 
@@ -252,18 +257,9 @@ namespace SimpleJsonPlugin
 		}
 
 		json jEvent;
-
 		jEvent["event"] = "SET SEQUENCE";
 		jEvent["sequence"] = name;
 		jEvent["value"] = static_cast<int64_t>(value);
-
-		if (m_logger->getLevel() <= IStreamLogger::LEVEL_DEBUG) {
-			std::stringstream ss;
-			ss << std::endl;
-			ss << std::setw(4) << jEvent << std::endl;
-			const std::string message = ss.str();
-			m_logger->debug(message.c_str());
-		}
 
 		pImp->writeEvent(jEvent);
 	}
@@ -329,8 +325,6 @@ namespace SimpleJsonPlugin
 	ReplTransaction::ReplTransaction(SimpleJsonPlugin* applier, ISC_INT64 number)
 		: m_applier(applier)
 		, m_number(number)
-		, m_savepoints()
-		, m_blobs()
 	{
 		m_applier->addRef(); // Lock parent from disappearing
 	}
@@ -347,62 +341,50 @@ namespace SimpleJsonPlugin
 
 	void ReplTransaction::prepare(ThrowStatusWrapper* status)
 	{
-		// ignore
+		json jEvent;
+		jEvent["event"] = "PREPARE TRANSACTION";
+		jEvent["tnx"] = static_cast<int64_t>(m_number);
+		m_applier->pImp->writeEvent(jEvent);
 	}
 
 	void ReplTransaction::commit(ThrowStatusWrapper* status)
-	{
-		m_applier->m_logger->debug(vformat("[%" UQUADFORMAT "] COMMIT", m_number).c_str());
-		if (m_savepoints.size() > 0) {
-			auto events = std::move(m_savepoints.top());
-			if (events->size() > 0) {
-				if (m_applier->m_logger->getLevel() <= IStreamLogger::LEVEL_DEBUG) {
-					const std::string message = "Events: "s + std::to_string(events->size());
-					m_applier->m_logger->debug(message.c_str());
-				}
-				// add events
-				try {
-					for (const auto& ev : *events) {
-						m_applier->pImp->writeEvent(ev);
-					}
-				}
-				catch (const std::exception& e) {
-					throwException(status, e.what());
-				}
-
-			}
-			// clear remaining savepoints
-			while (m_savepoints.size() > 0) {
-				m_savepoints.pop();
-			}
-		}
+	{		
+		json jEvent;
+		jEvent["event"] = "COMMIT";
+		jEvent["tnx"] = static_cast<int64_t>(m_number);
+		m_applier->pImp->writeEvent(jEvent);
 	}
 
 	void ReplTransaction::rollback(ThrowStatusWrapper* status)
 	{
-		while (m_savepoints.size() > 0) {
-			m_savepoints.pop();
-		}
+		json jEvent;
+		jEvent["event"] = "COMMIT";
+		jEvent["tnx"] = static_cast<int64_t>(m_number);
+		m_applier->pImp->writeEvent(jEvent);
 	}
 
 	void ReplTransaction::startSavepoint(ThrowStatusWrapper* status)
 	{
-		m_savepoints.push(make_unique<EventList>());
+		json jEvent;
+		jEvent["event"] = "SAVEPOINT";
+		jEvent["tnx"] = static_cast<int64_t>(m_number);
+		m_applier->pImp->writeEvent(jEvent);
 	}
 
 	void ReplTransaction::releaseSavepoint(ThrowStatusWrapper* status)
 	{
-		if (m_savepoints.size() > 1) {
-			auto prevEvents = std::move(m_savepoints.top());
-			m_savepoints.pop();
-			const auto& events = m_savepoints.top();
-			events->insert(events->end(), prevEvents->begin(), prevEvents->end());
-		}
+		json jEvent;
+		jEvent["event"] = "RELEASE SAVEPOINT";
+		jEvent["tnx"] = static_cast<int64_t>(m_number);
+		m_applier->pImp->writeEvent(jEvent);
 	}
 
 	void ReplTransaction::rollbackSavepoint(ThrowStatusWrapper* status)
 	{
-		m_savepoints.pop();
+		json jEvent;
+		jEvent["event"] = "ROLLBACK SAVEPOINT";
+		jEvent["tnx"] = static_cast<int64_t>(m_number);
+		m_applier->pImp->writeEvent(jEvent);
 	}
 
 	void ReplTransaction::insertRecord(ThrowStatusWrapper* status, const char* name, IReplicatedRecord* record)
@@ -420,7 +402,7 @@ namespace SimpleJsonPlugin
 			json jRecord;
 			json jBlobs;
 
-			dumpRecord(status, record, jRecord, m_applier->m_dumpBlobs, &jBlobs);
+			dumpRecord(status, record, jRecord);
 
 			json jEvent;
 
@@ -428,25 +410,7 @@ namespace SimpleJsonPlugin
 			jEvent["table"] = name;
 			jEvent["tnx"] = static_cast<int64_t>(m_number);
 			jEvent["record"] = jRecord;
-
-
-			if (m_applier->m_dumpBlobs) {
-				if (!jBlobs.empty()) {
-					jEvent["newBlobs"] = jBlobs;
-				}
-			}
-
-
-			if (m_applier->m_logger->getLevel() <= IStreamLogger::LEVEL_DEBUG) {
-				std::stringstream ss;
-				ss << std::endl;
-				ss << std::setw(4) << jEvent << std::endl;
-				const std::string message = ss.str();
-				m_applier->m_logger->debug(message.c_str());
-			}
-
-			// Save event to savepoint
-			m_savepoints.top()->push_back(jEvent);
+			m_applier->pImp->writeEvent(jEvent);
 		}
 		catch (const std::exception& e) {
 			throwException(status, e.what());
@@ -472,10 +436,9 @@ namespace SimpleJsonPlugin
 		try {
 			json jOrgRecord;
 			json jNewRecord;
-			json jBlobs;
 
-			dumpRecord(status, orgRecord, jOrgRecord, false, nullptr);
-			dumpRecord(status, newRecord, jNewRecord, m_applier->m_dumpBlobs, &jBlobs);
+			dumpRecord(status, orgRecord, jOrgRecord);
+			dumpRecord(status, newRecord, jNewRecord);
 
 			set<std::string> changedFields;
 			for (const auto& [key, value] : jNewRecord.items()) {
@@ -492,31 +455,13 @@ namespace SimpleJsonPlugin
 			}
 
 			json jEvent;
-
 			jEvent["event"] = "UPDATE";
 			jEvent["table"] = name;
 			jEvent["tnx"] = static_cast<int64_t>(m_number);
-			jEvent["oldRecord"] = changedFields;
+			jEvent["changedFields"] = changedFields;
 			jEvent["oldRecord"] = jOrgRecord;
 			jEvent["record"] = jNewRecord;
-
-
-			if (m_applier->m_dumpBlobs) {
-				if (!jBlobs.empty()) {
-					jEvent["newBlobs"] = jBlobs;
-				}
-			}
-
-			if (m_applier->m_logger->getLevel() <= IStreamLogger::LEVEL_DEBUG) {
-				std::stringstream ss;
-				ss << std::endl;
-				ss << std::setw(4) << jEvent << std::endl;
-				const std::string message = ss.str();
-				m_applier->m_logger->debug(message.c_str());
-			}
-
-			// Save event to savepoint
-			m_savepoints.top()->push_back(jEvent);
+			m_applier->pImp->writeEvent(jEvent);
 		}
 		catch (const std::exception& e) {
 			throwException(status, e.what());
@@ -535,25 +480,14 @@ namespace SimpleJsonPlugin
 
 		try {
 			json jRecord;
-			dumpRecord(status, record, jRecord, false, nullptr);
+			dumpRecord(status, record, jRecord);
 
 			json jEvent;
-
 			jEvent["event"] = "DELETE";
 			jEvent["table"] = name;
 			jEvent["tnx"] = static_cast<int64_t>(m_number);
 			jEvent["record"] = jRecord;
-
-			if (m_applier->m_logger->getLevel() <= IStreamLogger::LEVEL_DEBUG) {
-				std::stringstream ss;
-				ss << std::endl;
-				ss << std::setw(4) << jEvent << std::endl;
-				const std::string message = ss.str();
-				m_applier->m_logger->debug(message.c_str());
-			}
-
-			// Save event to savepoint
-			m_savepoints.top()->push_back(jEvent);
+			m_applier->pImp->writeEvent(jEvent);
 		}
 		catch (const std::exception& e) {
 			throwException(status, e.what());
@@ -568,21 +502,10 @@ namespace SimpleJsonPlugin
 		}
 
 		json jEvent;
-
 		jEvent["event"] = "EXECUTE SQL";
 		jEvent["sql"] = sql;
 		jEvent["tnx"] = static_cast<int64_t>(m_number);
-
-		if (m_applier->m_logger->getLevel() <= IStreamLogger::LEVEL_DEBUG) {
-			std::stringstream ss;
-			ss << std::endl;
-			ss << std::setw(4) << jEvent << std::endl;
-			const std::string message = ss.str();
-			m_applier->m_logger->debug(message.c_str());
-		}
-
-		// Save event to savepoint
-		m_savepoints.top()->push_back(jEvent);
+		m_applier->pImp->writeEvent(jEvent);
 	}
 
 	void ReplTransaction::executeSqlIntl(ThrowStatusWrapper* status, unsigned charset, const char* sql)
@@ -605,17 +528,22 @@ namespace SimpleJsonPlugin
 			return;
 		}
 
-		auto blobId = *reinterpret_cast<ISC_INT64*>(blob_id);
 		if ((length > 0) && (data != nullptr)) {
 			auto bData = reinterpret_cast<const std::byte*>(data);
 			vector<std::byte> blobData;
 			blobData.insert(blobData.end(), bData, bData + length);
-			m_blobs[blobId] = blobData;
+			auto binary = getBinaryString((blobData.data()), blobData.size());
+
+			json jEvent;
+			jEvent["event"] = "STORE BLOB";
+			jEvent["blobId"] = vformat("%d:%d", blob_id->gds_quad_high, blob_id->gds_quad_low);
+			jEvent["tnx"] = static_cast<int64_t>(m_number);
+			jEvent["data"] = binary;
+			m_applier->pImp->writeEvent(jEvent);
 		}
 	}
 
-	void ReplTransaction::dumpRecord(ThrowStatusWrapper* status, IReplicatedRecord* record, json& jRecord, bool dumpBlob,
-		json* const jBlobs)
+	void ReplTransaction::dumpRecord(ThrowStatusWrapper* status, IReplicatedRecord* record, json& jRecord)
 	{
 		for (unsigned i = 0; i < record->getCount(); i++) {
 			auto field = record->getField(i);
@@ -819,30 +747,7 @@ namespace SimpleJsonPlugin
 				{
 					const auto blobId = reinterpret_cast<const ISC_QUAD*>(fieldData);
 					const auto val = vformat("%d:%d", blobId->gds_quad_high, blobId->gds_quad_low);
-					jRecord[fieldName] = val;
-					if (dumpBlob && (jBlobs != nullptr)) {
-						auto blobKey = *reinterpret_cast<ISC_INT64 const*>(blobId);
-						auto it = m_blobs.find(blobKey);
-						if (it != m_blobs.end()) {
-							auto blobData = (*it).second;
-							std::string val = "";
-							if (fieldSubType == 1) {
-								std::string text(reinterpret_cast<char*>(blobData.data()), blobData.size());
-								if ((fieldCharsetId == CS_UTF8) || (fieldCharsetId == CS_NONE)) {
-									val = text;
-								}
-								else {
-									// character conversion required
-									const auto& encoder = m_applier->getEncoder(fieldCharsetId);
-									val = encoder->toUtf8(text);
-								}
-							}
-							else {
-								val = getBinaryString((blobData.data()), blobData.size());
-							}
-							(*jBlobs)[fieldName] = val;
-						}
-					}
+					jRecord[fieldName] = val;					
 					break;
 				}
 				case SQL_ARRAY:

@@ -109,12 +109,10 @@ namespace SimpleJsonPlugin
 		void storeBlob(ThrowStatusWrapper* status, ISC_QUAD* blob_id,
 			ISC_INT64 length, const unsigned char* data) override;
 	private:
-		void dumpRecord(ThrowStatusWrapper* status, IReplicatedRecord* record, json& jRecord, bool dumpBlob = false, json* const jBlobs = nullptr);
+		void dumpRecord(ThrowStatusWrapper* status, IReplicatedRecord* record, json& jRecord);
 	private:
 		SimpleJsonPlugin* m_applier = nullptr;
 		ISC_INT64 m_number = 0;
-		stack<EventListPtr> m_savepoints {};
-		std::map<ISC_INT64, std::vector<std::byte>> m_blobs {};
 	};
 
 	class SimpleJsonPluginFactory final : public IReplicateApplierFactoryImpl<SimpleJsonPluginFactory, ThrowStatusWrapper>
@@ -125,7 +123,7 @@ namespace SimpleJsonPlugin
 		SimpleJsonPluginFactory() = delete;
 		explicit SimpleJsonPluginFactory(IMaster* master);
 
-		IReplicateApplierPlugin* createPlugin(ThrowStatusWrapper* status, IConfig* config, IStreamLogger* logger);
+		IReplicateApplierPlugin* createPlugin(ThrowStatusWrapper* status, IConfig* config, IStreamLogger* logger) override;
 	};
 
 };
