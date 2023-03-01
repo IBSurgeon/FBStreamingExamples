@@ -358,7 +358,7 @@ namespace SimpleJsonPlugin
 	void ReplTransaction::rollback(ThrowStatusWrapper* status)
 	{
 		json jEvent;
-		jEvent["event"] = "COMMIT";
+		jEvent["event"] = "ROLLBACK";
 		jEvent["tnx"] = static_cast<int64_t>(m_number);
 		m_applier->pImp->writeEvent(jEvent);
 	}
