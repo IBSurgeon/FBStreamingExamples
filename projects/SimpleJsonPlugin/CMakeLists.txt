@@ -8,6 +8,17 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# set variable for the C preprocessor to detect the operatong system
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_compile_definitions(LINUX)
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    add_compile_definitions(MASCOS)
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    add_compile_definitions(_WINDOWS)
+endif()
+
 ###############################################################################
 # Require and enable C++ 0x/11/14/17
 ############
