@@ -146,7 +146,7 @@ task = d:\fbdata\4.0\replication\testdb\archive
 	register_sequence_events = true
 	outputDir = d:\fbdata\4.0\replication\testdb\json_archive
 	# include_tables = 
-	# exclude_tables = 	
+	# exclude_tables = 
 }
 ```
 
