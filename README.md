@@ -37,20 +37,19 @@ The `events` field is an array of objects, each representing one of the replicat
 An event object may contain the following fields:
 
 * `event` - event type. The following options are available:
-*  `SET SEQUENCE` - setting the value of a sequence (generator);
-*  `START TRANSACTION` - starting a transaction;
-*  `PREPARE TRANSACTION` - executing the first phase of confirming a two-phase transaction;
-*  `SAVEPOINT` - setting a savepoint;
-*  `RELEASE SAVEPOINT` - releasing a savepoint;
-*  `ROLLBACK SAVEPOINT` - rolling back a savepoint;
-*  `COMMIT` - committing a transaction;
-*  `ROLLBACK` - rolling back a transaction;
-*  `INSERT` - inserting a new record into a table;
-*  `UPDATE` - updating a record in a table;
-*  `DELETE` - deleting a record from a table;
-*  `EXECUTE SQL` - executing an SQL statement. Such events only occur for DDL statements;
-*  `STORE BLOB` - storing a BLOB.
-
+  - `SET SEQUENCE` - setting the value of a sequence (generator);
+  - `START TRANSACTION` - starting a transaction;
+  - `PREPARE TRANSACTION` - executing the first phase of confirming a two-phase transaction;
+  - `SAVEPOINT` - setting a savepoint;
+  - `RELEASE SAVEPOINT` - releasing a savepoint;
+  - `ROLLBACK SAVEPOINT` - rolling back a savepoint;
+  - `COMMIT` - committing a transaction;
+  - `ROLLBACK` - rolling back a transaction;
+  - `INSERT` - inserting a new record into a table;
+  - `UPDATE` - updating a record in a table;
+  - `DELETE` - deleting a record from a table;
+  - `EXECUTE SQL` - executing an SQL statement. Such events only occur for DDL statements;
+  - `STORE BLOB` - storing a BLOB.
 * `tnx` - transaction number. Available for all events except `SET SEQUENCE`, as generators operate outside the context of transactions;
 * `sequence` - sequence name. Available only in the `SET SEQUENCE` event;
 * `value` - sequence value. Available only in the `SET SEQUENCE` event;
@@ -132,7 +131,7 @@ Example of a `.json` file content:
 
 Example of plugin configuration:
 
-```
+```conf
 task = d:\fbdata\4.0\replication\testdb\archive
 {
     deleteProcessedFile = true

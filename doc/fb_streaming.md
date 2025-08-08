@@ -303,7 +303,7 @@ Example contents of a `.json` file:
 
 Plugin configuration example:
 
-```
+```conf
 task = d:\fbdata\4.0\replication\testdb\archive
 {
     deleteProcessedFile = true

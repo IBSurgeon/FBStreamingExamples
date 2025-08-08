@@ -304,7 +304,7 @@ journal_archive_command = "copy $(pathname) $(archivepathname) && copy $(pathnam
 
 Пример настройки плагина:
 
-```
+```conf
 task = d:\fbdata\4.0\replication\testdb\archive
 {
     deleteProcessedFile = true

@@ -133,7 +133,7 @@ Firebird streaming - это технология асинхронной публ
 
 Пример настройки плагина:
 
-```
+```conf
 task = d:\fbdata\4.0\replication\testdb\archive
 {
 	deleteProcessedFile = true
