@@ -614,13 +614,15 @@ void critical(const char* message)
 
 ## Интерфейс `IStringEncodeUtils`
 
+Интерфейс `IStringEncodeUtils` предоставляет функции для преобразования строк из одной кодировки в другую. Для упрощения работы с этим интерфейсом мы написали высокоуровневую обёртку [`StringEncodeHelper`](../src/encoding/StringEncodeHelper.h).
+
 ### Функция `getConverterById`
 
 ```cpp
 IStringConverter* getConverterById(Status* status, unsigned charsetId)
 ```
 
-// TODO: Написать
+Возвращает экземляр интерфейса `IStringConverter`, который предназначен для перекодировки строк из своей кодировки в одну из кодировок unicode. Параметр `charsetId` задаёт идентификатор кодировки Firebird для перекодировщика `IStringConverter`. Идентифтикаторы кодировок Firebird перечислдены в файле [`charsets.h`](../src/common/charsets.h).
 
 ### Функция `getConverterByName`
 
@@ -628,7 +630,7 @@ IStringConverter* getConverterById(Status* status, unsigned charsetId)
 IStringConverter* getConverterByName(Status* status, const char* charsetName)
 ```
 
-// TODO: Написать
+Возвращает экземляр интерфейса `IStringConverter`, который предназначен для перекодировки строк из своей кодировки в одну из кодировок unicode. Параметр `charsetName` задаёт имя набора символов Firebird для перекодировщика `IStringConverter`.
 
 ### Функция `convertCharset`
 
@@ -637,7 +639,19 @@ ISC_UINT64 convertCharset(Status* status, IStringConverter* srcConveter, IString
     const char* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку из одной кодировки в другую, используя экземпляры интерфейса `IStringConverter` перекодировщиков для исходной и целевой кодировки. Экземпляры перекодировщиков можно получить исопльзуя функции `getConverterById` или `getConverterByName`.
+
+Параметры функции `convertCharset`:
+
+* `status` - статус вектор;
+* `srcConveter` - экземпляр перекодировщика для исходной кодировки;
+* `dstConveter` - экземпляр перекодировщика для целевой кодировки;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
 
 ### Функция `convertUtf8ToWCS`
 
@@ -645,7 +659,20 @@ ISC_UINT64 convertCharset(Status* status, IStringConverter* srcConveter, IString
 ISC_UINT64 convertUtf8ToWCS(Status* status, const char* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize) 
 ```
 
-// TODO: Написать
+Перекодирует строку из кодировки `utf-8` в строку с широкими символами (типа `wchar_t`). 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+> [!NOTE]
+> **Примечание**: `wchar_t` не является платформенно независимым типом, его размер зависит от операционной системы на которой происходит компиляция.
 
 ### Функция `convertUtf8ToUtf16`
 
@@ -653,7 +680,17 @@ ISC_UINT64 convertUtf8ToWCS(Status* status, const char* src, ISC_UINT64 srcSize,
 ISC_UINT64 convertUtf8ToUtf16(Status* status, const char* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку из кодировки `utf-8` в строку с кодировкой `utf-16`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
 
 ### Функция `convertUtf8ToUtf32`
 
@@ -661,7 +698,17 @@ ISC_UINT64 convertUtf8ToUtf16(Status* status, const char* src, ISC_UINT64 srcSiz
 ISC_UINT64 convertUtf8ToUtf32(Status* status, const char* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку из кодировки `utf-8` в строку с кодировкой `utf-32`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
 
 ### Функция `convertUtf16ToWCS`
 
@@ -669,7 +716,20 @@ ISC_UINT64 convertUtf8ToUtf32(Status* status, const char* src, ISC_UINT64 srcSiz
 ISC_UINT64 convertUtf16ToWCS(Status* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку из кодировки `utf-16` в строку с широкими символами (типа `wchar_t`). 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+> [!NOTE]
+> **Примечание**: `wchar_t` не является платформенно независимым типом, его размер зависит от операционной системы на которой происходит компиляция.
 
 ### Функция `convertUtf16ToUtf8`
 
@@ -677,7 +737,17 @@ ISC_UINT64 convertUtf16ToWCS(Status* status, const void* src, ISC_UINT64 srcSize
 ISC_UINT64 convertUtf16ToUtf8(Status* status, const void* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку из кодировки `utf-16` в строку с кодировкой `utf-8`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
 
 ### Функция `convertUtf16ToUtf32`
 
@@ -685,7 +755,17 @@ ISC_UINT64 convertUtf16ToUtf8(Status* status, const void* src, ISC_UINT64 srcSiz
 ISC_UINT64 convertUtf16ToUtf32(Status* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку из кодировки `utf-16` в строку с кодировкой `utf-32`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
 
 ### Функция `convertUtf32ToWCS`
 
@@ -693,7 +773,20 @@ ISC_UINT64 convertUtf16ToUtf32(Status* status, const void* src, ISC_UINT64 srcSi
 ISC_UINT64 convertUtf32ToWCS(Status* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку из кодировки `utf-32` в строку с широкими символами (типа `wchar_t`). 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+> [!NOTE]
+> **Примечание**: `wchar_t` не является платформенно независимым типом, его размер зависит от операционной системы на которой происходит компиляция.
 
 ### Функция `convertUtf32ToUtf8`
 
@@ -701,7 +794,17 @@ ISC_UINT64 convertUtf32ToWCS(Status* status, const void* src, ISC_UINT64 srcSize
 ISC_UINT64 convertUtf32ToUtf8(StatusType* status, const void* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку из кодировки `utf-32` в строку с кодировкой `utf-8`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
 
 ### Функция `convertUtf32ToUtf16`
 
@@ -709,7 +812,17 @@ ISC_UINT64 convertUtf32ToUtf8(StatusType* status, const void* src, ISC_UINT64 sr
 ISC_UINT64 convertUtf32ToUtf16(StatusType* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку из кодировки `utf-32` в строку с кодировкой `utf-16`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
 
 ### Функция `convertWCSToUtf8`
 
@@ -717,7 +830,20 @@ ISC_UINT64 convertUtf32ToUtf16(StatusType* status, const void* src, ISC_UINT64 s
 ISC_UINT64 convertWCSToUtf8(StatusType* status, const void* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку с широкими символами (типа `wchar_t`) в строку с кодировкой `utf-8`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+> [!NOTE]
+> **Примечание**: `wchar_t` не является платформенно независимым типом, его размер зависит от операционной системы на которой происходит компиляция.
 
 ### Функция `convertWCSToUtf16`
 
@@ -725,7 +851,20 @@ ISC_UINT64 convertWCSToUtf8(StatusType* status, const void* src, ISC_UINT64 srcS
 ISC_UINT64 convertWCSToUtf16(StatusType* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку с широкими символами (типа `wchar_t`) в строку с кодировкой `utf-16`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+> [!NOTE]
+> **Примечание**: `wchar_t` не является платформенно независимым типом, его размер зависит от операционной системы на которой происходит компиляция.
 
 ### Функция `convertWCSToUtf32`
 
@@ -733,7 +872,209 @@ ISC_UINT64 convertWCSToUtf16(StatusType* status, const void* src, ISC_UINT64 src
 ISC_UINT64 convertWCSToUtf32(StatusType* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
 ```
 
-// TODO: Написать
+Перекодирует строку с широкими символами (типа `wchar_t`) в строку с кодировкой `utf-32`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+> [!NOTE]
+> **Примечание**: `wchar_t` не является платформенно независимым типом, его размер зависит от операционной системы на которой происходит компиляция.
 
 ----
 
+## Интерфейс `IStringConverter`
+
+Интерфейс `IStringConverter` предоставляет функции для преобразования строк из кодировки, привязанной к экземляру этого интерфейса, в одну из кодировок unicode. Для упрощения работы с этим интерфейсом мы написали высокоуровневую обёртку [`StringConverterHelper`](../src/encoding/StringConverterHelper.h).
+
+### Функция `getMaxCharSize`
+
+```cpp
+int getMaxCharSize()
+```
+
+Возвращет максимальный размер символа в байтах для кодировки привязанной к экземпляру интерфейса `IStringConverter`.
+
+### Функция `getMinCharSize`
+
+```cpp
+int getMinCharSize()
+```
+
+Возвращет минимальный размер символа в байтах для кодировки привязанной к экземпляру интерфейса `IStringConverter`.
+
+### Функция `getCharsetId`
+
+```cpp
+unsigned getCharsetId()
+```
+
+Возвращает идентифтикатор кодировки Firebird привязанной к экземпляру интерфейса `IStringConverter`.
+
+Идентифтикаторы кодировок Firebird перечислдены в файле [`charsets.h`](../src/common/charsets.h).
+
+### Функция `getCharsetName`
+
+```cpp
+const char* getCharsetName()
+```
+
+Возвращает наименование набора символов Firebird привязанному к экземпляру интерфейса `IStringConverter`.
+
+### Функция `toUtf8`
+
+```cpp
+ISC_UINT64 toUtf8(Status* status, const char* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+Перекодирует строку из кодировки привязанной к экземпляру интерфейса `IStringConverter` в строку с кодировкой `utf-8`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+### Функция `fromUtf8`
+
+```cpp
+ISC_UINT64 fromUtf8(Status* status, const char* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+Перекодирует строку из кодировки `utf-8` в строку с кодировкой привязанной к экземпляру интерфейса `IStringConverter`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+### Функция `toUtf16`
+
+```cpp
+ISC_UINT64 toUtf16(Status* status, const char* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize) 
+```
+
+Перекодирует строку из кодировки привязанной к экземпляру интерфейса `IStringConverter` в строку с кодировкой `utf-16`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+### Функция `fromUtf16`
+
+```cpp
+ISC_UINT64 fromUtf16(Status* status, const void* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)  
+```
+
+Перекодирует строку из кодировки `utf-16` в строку с кодировкой привязанной к экземпляру интерфейса `IStringConverter`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+### Функция `toUtf32`
+
+```cpp
+ISC_UINT64 toUtf32(Status* status, const char* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)  
+```
+
+Перекодирует строку из кодировки привязанной к экземпляру интерфейса `IStringConverter` в строку с кодировкой `utf-32`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+### Функция `fromUtf32`
+
+```cpp
+ISC_UINT64 fromUtf32(Status* status, const void* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+Перекодирует строку из кодировки `utf-32` в строку с кодировкой привязанной к экземпляру интерфейса `IStringConverter`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+### Функция `toWCS`
+
+```cpp
+ISC_UINT64 toWCS(Status* status, const char* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize) 
+```
+
+Перекодирует строку из кодировки привязанной к экземпляру интерфейса `IStringConverter` в строку с широкими символами (типа `wchar_t`). 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+> [!NOTE]
+> **Примечание**: `wchar_t` не является платформенно независимым типом, его размер зависит от операционной системы на которой происходит компиляция.
+
+### Функция `fromWCS`
+
+```cpp
+ISC_UINT64 fromWCS(Status* status, const void* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize) 
+```
+
+Перекодирует строку с широкими символами (типа `wchar_t`) в строку с кодировкой привязанной к экземпляру интерфейса `IStringConverter`. 
+
+Параметры функции:
+
+* `status` - статус вектор;
+* `src` - исходная строка;
+* `srcSize` - размер исходной строки;
+* `destBuffer` - буфер для размещения целевой строки;
+* `destBufferSize` - размер буфера для целевой строки.
+
+Функция возращает длину целевой строки, если перекодировка удалась.
+
+> [!NOTE]
+> **Примечание**: `wchar_t` не является платформенно независимым типом, его размер зависит от операционной системы на которой происходит компиляция.
+
+----
