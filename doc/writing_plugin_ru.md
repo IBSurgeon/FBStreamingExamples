@@ -18,13 +18,16 @@
 `MyStreamPlugin`, `MyStreamedTransaction` и `MyStreamPluginFactory`. Тогда определение этих классов должно выглядеть следующим образом:
 
 ```cpp
+namespace MyPlugin {
+
     class MyStreamedTransaction;
 
-    class MyStreamPlugin : public IStreamPluginImpl<MyStreamPlugin, ThrowStatusWrapper>
+    class MyStreamPlugin : public Firebird::IStreamPluginImpl<MyStreamPlugin, Firebird::ThrowStatusWrapper>
     {
     public:
         MyStreamPlugin() = delete;
-        MyStreamPlugin(IMaster* master, IConfig* config, IStringEncodeUtils* encodeUtils, IStreamLogger* logger);
+        MyStreamPlugin(Firebird::IMaster* master, Firebird::IConfig* config, 
+            Firebird::IStringEncodeUtils* encodeUtils, Firebird::IStreamLogger* logger);
         virtual ~MyStreamPlugin();
 
         // IReferenceCounted implementation
@@ -32,28 +35,28 @@
         int release() override;
 
         // IPluginBase implementation
-        void setOwner(IReferenceCounted* o) override;
-        IReferenceCounted* getOwner() override;
+        void setOwner(Firebird::IReferenceCounted* o) override;
+        Firebird::IReferenceCounted* getOwner() override;
 
         // IStreamPlugin implementation
-        FB_BOOLEAN init(ThrowStatusWrapper* status, IAttachment* attachment) override;
-        void finish(ThrowStatusWrapper* status) override;
-        void startSegment(ThrowStatusWrapper* status, SegmentHeaderInfo* segmentHeader) override;
-        void finishSegment(ThrowStatusWrapper* status) override;
-        void startBlock(ThrowStatusWrapper* status, unsigned blockOffset) override;
+        FB_BOOLEAN init(Firebird::ThrowStatusWrapper* status, Firebird::IAttachment* attachment) override;
+        void finish(Firebird::ThrowStatusWrapper* status) override;
+        void startSegment(Firebird::ThrowStatusWrapper* status, SegmentHeaderInfo* segmentHeader) override;
+        void finishSegment(Firebird::ThrowStatusWrapper* status) override;
+        void startBlock(Firebird::ThrowStatusWrapper* status, unsigned blockOffset) override;
         void setSegmentOffset(unsigned offset) override;
-        IStreamedTransaction* startTransaction(ThrowStatusWrapper* status, ISC_INT64 number) override;
-        void setSequence(ThrowStatusWrapper* status, const char* name, ISC_INT64 value) override;
-        FB_BOOLEAN matchTable(ThrowStatusWrapper* status, const char* relationName) override;
-        IStreamedTransaction* getTransaction(ThrowStatusWrapper* status, ISC_INT64 number) override;
-        void cleanupTransaction(ThrowStatusWrapper* status, ISC_INT64 number) override;
-        void cleanupTransactions(ThrowStatusWrapper* status) override;
+        Firebird::IStreamedTransaction* startTransaction(Firebird::ThrowStatusWrapper* status, ISC_INT64 number) override;
+        void setSequence(Firebird::ThrowStatusWrapper* status, const char* name, ISC_INT64 value) override;
+        FB_BOOLEAN matchTable(Firebird::ThrowStatusWrapper* status, const char* relationName) override;
+        Firebird::IStreamedTransaction* getTransaction(Firebird::ThrowStatusWrapper* status, ISC_INT64 number) override;
+        void cleanupTransaction(Firebird::ThrowStatusWrapper* status, ISC_INT64 number) override;
+        void cleanupTransactions(Firebird::ThrowStatusWrapper* status) override;
         void log(unsigned level, const char* message) override;
     private:
         // ...
     };
 
-    class MyStreamedTransaction : public IStreamedTransactionImpl<MyStreamedTransaction, ThrowStatusWrapper>
+    class MyStreamedTransaction : public Firebird::IStreamedTransactionImpl<MyStreamedTransaction, Firebird::ThrowStatusWrapper>
     {
     public:
         MyStreamedTransaction() = delete;
@@ -64,18 +67,19 @@
         void dispose() override;
 
         // IStreamedTransaction implementation
-        void prepare(ThrowStatusWrapper* status) override;
-        void commit(ThrowStatusWrapper* status) override;
-        void rollback(ThrowStatusWrapper* status) override;
-        void startSavepoint(ThrowStatusWrapper* status) override;
-        void releaseSavepoint(ThrowStatusWrapper* status) override;
-        void rollbackSavepoint(ThrowStatusWrapper* status) override;
-        void insertRecord(ThrowStatusWrapper* status, const char* name, IStreamedRecord* record) override;
-        void updateRecord(ThrowStatusWrapper* status, const char* name, IStreamedRecord* orgRecord, IStreamedRecord* newRecord) override;
-        void deleteRecord(ThrowStatusWrapper* status, const char* name, IStreamedRecord* record) override;
-        void executeSql(ThrowStatusWrapper* status, const char* sql) override;
-        void executeSqlIntl(ThrowStatusWrapper* status, unsigned charset, const char* sql) override;
-        void storeBlob(ThrowStatusWrapper* status, ISC_QUAD* blob_id,
+        void prepare(Firebird::ThrowStatusWrapper* status) override;
+        void commit(Firebird::ThrowStatusWrapper* status) override;
+        void rollback(Firebird::ThrowStatusWrapper* status) override;
+        void startSavepoint(Firebird::ThrowStatusWrapper* status) override;
+        void releaseSavepoint(Firebird::ThrowStatusWrapper* status) override;
+        void rollbackSavepoint(Firebird::ThrowStatusWrapper* status) override;
+        void insertRecord(Firebird::ThrowStatusWrapper* status, const char* name, Firebird::IStreamedRecord* record) override;
+        void updateRecord(Firebird::ThrowStatusWrapper* status, const char* name, Firebird::IStreamedRecord* orgRecord, 
+            Firebird::IStreamedRecord* newRecord) override;
+        void deleteRecord(Firebird::ThrowStatusWrapper* status, const char* name, Firebird::IStreamedRecord* record) override;
+        void executeSql(Firebird::ThrowStatusWrapper* status, const char* sql) override;
+        void executeSqlIntl(Firebird::ThrowStatusWrapper* status, unsigned charset, const char* sql) override;
+        void storeBlob(Firebird::ThrowStatusWrapper* status, ISC_QUAD* blob_id,
             ISC_INT64 length, const unsigned char* data) override;
     private:
         MyStreamPlugin* m_streamPlugin;
@@ -84,16 +88,20 @@
     };
 
 
-    class MyStreamPluginFactory : public IStreamPluginFactoryImpl<MyStreamPluginFactory, ThrowStatusWrapper>
+    class MyStreamPluginFactory : public Firebird::IStreamPluginFactoryImpl<MyStreamPluginFactory, Firebird::ThrowStatusWrapper>
     {
     private:
-        IMaster* m_master = nullptr;
+        Firebird::IMaster* m_master = nullptr;
     public:
         MyStreamPluginFactory() = delete;
-        explicit MyStreamPluginFactory(IMaster* master);
+        explicit MyStreamPluginFactory(Firebird::IMaster* master);
 
-        IStreamPlugin* createPlugin(ThrowStatusWrapper* status, IConfig* config, IStreamLogger* logger) override;
+    Firebird::IStreamPlugin* createPlugin(Firebird::ThrowStatusWrapper* status, Firebird::IConfig* config,
+        Firebird::IStringEncodeUtils* encodeUtils, Firebird::IStreamLogger* logger) override;
     };
+
+    // ...
+} // namespace MyPlugin    
 ```
 
 После того, как вы написали реализацию данных интерфейсов, необходимо зарегистрировать плагин в точке входа. Для плагинов службы `fb_streaming` точкой входа является функция с именем `fb_stream_plugin`.
@@ -101,13 +109,21 @@
 Пример регистрации плагина приведён в следующем коде:
 
 ```cpp
+
+#include "../../include/StreamingInterface.h"
+
+using namespace Firebird;
+
+extern "C" {
+
     FB_DLL_EXPORT void fb_stream_plugin(IMaster* master, IStreamPluginManager* pm)
     {
         // создание фабрики для регистрации плагина
-        auto factory = new MyStreamPluginFactory(master);
+        auto factory = new MyPlugin::MyStreamPluginFactory(master);
         // регистрируем плагин с именем "my_plugin"
         pm->registerPluginFactory("my_plugin", factory);
     }
+} // extern C 
 ```
 
 Полный пример создания собственного плагина для службы `fb_streaming` с исходным кодом вы можете получить по адресу <https://github.com/IBSurgeon/FBStreamingExamples>
@@ -383,10 +399,12 @@ void storeBlob(Status* status, ISC_QUAD* blob_id,
 ### Функция `createPlugin`
 
 ```cpp
-IStreamPlugin* createPlugin(Status* status, IConfig* config, IStreamLogger* logger)
+IStreamPlugin* createPlugin(Status* status, IConfig* config, IStringEncodeUtils* encodeUtils, IStreamLogger* logger)
 ```
 
 Функция `createPlugin` предназначена для создания экземпляра класса интерфейса `IStreamPlugin`. Функция `createPlugin` возвращает указатель на вновь создаваемый экземпляр. В параметр `config` передаётся указатель на интерфейс для чтения конфигурации плагина. В параметр `logger` передаётся указатель на интерфейс логирования службы `fb_streaming`.
+
+В параметр `encodeUtils` передаётся указатель на служебный интерфейс, которые помогает перекодировать строки в различные кодировки. Дело в том, что в сегментах репликации поля таблиц с символьными данными могут хранится в различных кодировках (как пользователь определил их в таблице). При написании плагина обыно требуется оперировать строкой в одной конкретной кодировке, например UTF-8. Конечно же вы сами можете реализовать перекодировку строк, но посколльку служба `fb_streaming` в любом случае загружает библиотеку `icu` мы решили предоставить специальный интерфейс упрощающий эту задачу.
 
 > [!WARNING]
 > Перед возвратом указателя на экземпляр класса интерфейса `IStreamPlugin` не забудьте увеличить счётчик ссылок с помощью вызова `addRef()`.
@@ -593,3 +611,129 @@ void critical(const char* message)
 Функция `critical` предназначена для записи сообщения в журнала работы службы `fb_streaming` с уровнем логирования `IStreamLogger::LEVEL_CRITICAL`. В параметр `message` передаётся текст сообщения.
 
 ---
+
+## Интерфейс `IStringEncodeUtils`
+
+### Функция `getConverterById`
+
+```cpp
+IStringConverter* getConverterById(Status* status, unsigned charsetId)
+```
+
+// TODO: Написать
+
+### Функция `getConverterByName`
+
+```cpp
+IStringConverter* getConverterByName(Status* status, const char* charsetName)
+```
+
+// TODO: Написать
+
+### Функция `convertCharset`
+
+```cpp
+ISC_UINT64 convertCharset(Status* status, IStringConverter* srcConveter, IStringConverter* dstConveter, 
+    const char* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertUtf8ToWCS`
+
+```cpp
+ISC_UINT64 convertUtf8ToWCS(Status* status, const char* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize) 
+```
+
+// TODO: Написать
+
+### Функция `convertUtf8ToUtf16`
+
+```cpp
+ISC_UINT64 convertUtf8ToUtf16(Status* status, const char* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertUtf8ToUtf32`
+
+```cpp
+ISC_UINT64 convertUtf8ToUtf32(Status* status, const char* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertUtf16ToWCS`
+
+```cpp
+ISC_UINT64 convertUtf16ToWCS(Status* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertUtf16ToUtf8`
+
+```cpp
+ISC_UINT64 convertUtf16ToUtf8(Status* status, const void* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertUtf16ToUtf32`
+
+```cpp
+ISC_UINT64 convertUtf16ToUtf32(Status* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertUtf32ToWCS`
+
+```cpp
+ISC_UINT64 convertUtf32ToWCS(Status* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertUtf32ToUtf8`
+
+```cpp
+ISC_UINT64 convertUtf32ToUtf8(StatusType* status, const void* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertUtf32ToUtf16`
+
+```cpp
+ISC_UINT64 convertUtf32ToUtf16(StatusType* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertWCSToUtf8`
+
+```cpp
+ISC_UINT64 convertWCSToUtf8(StatusType* status, const void* src, ISC_UINT64 srcSize, char* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertWCSToUtf16`
+
+```cpp
+ISC_UINT64 convertWCSToUtf16(StatusType* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+### Функция `convertWCSToUtf32`
+
+```cpp
+ISC_UINT64 convertWCSToUtf32(StatusType* status, const void* src, ISC_UINT64 srcSize, void* destBuffer, ISC_UINT64 destBufferSize)
+```
+
+// TODO: Написать
+
+----
+
