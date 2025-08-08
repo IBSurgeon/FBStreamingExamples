@@ -1,3 +1,4 @@
+#pragma once
 #ifndef FB_AUTO_PTR_H
 #define FB_AUTO_PTR_H
 
@@ -23,156 +24,170 @@
  *  Contributor(s): ______________________________________.
  */
 
-namespace 
-{
-	template <typename T>
-	class AutoReleaseClear
-	{
-	public:
-		static void clear(T* ptr)
-		{
-			if (ptr)
-				ptr->release();
-		}
-	};
+namespace Firebird {
 
-	template <typename T>
-	class AutoDisposeClear
-	{
-	public:
-		static void clear(T* ptr)
-		{
-			if (ptr)
-				ptr->dispose();
-		}
-	};
+template <typename What>
+class SimpleDelete {
+public:
+    static void clear(What* ptr)
+    {
+        static_assert(sizeof(What) > 0, "can't delete pointer to incomplete type");
+        delete ptr;
+    }
+};
 
-	template <typename T>
-	class AutoDeleteClear
-	{
-	public:
-		static void clear(T* ptr)
-		{
-			delete ptr;
-		}
-	};
+template <typename What>
+class ArrayDelete {
+public:
+    static void clear(What* ptr)
+    {
+        static_assert(sizeof(What) > 0, "can't delete pointer to incomplete type");
+        delete[] ptr;
+    }
+};
 
-	template <typename T>
-	class AutoArrayDeleteClear
-	{
-	public:
-		static void clear(T* ptr)
-		{
-			delete[] ptr;
-		}
-	};
+template <typename T>
+class SimpleRelease {
+public:
+    static void clear(T* ptr)
+    {
+        if (ptr) {
+            ptr->release();
+        }
+    }
+};
 
-	template <typename T, typename Clear>
-	class AutoImpl
-	{
-	public:
-		AutoImpl<T, Clear>(T* aPtr = nullptr)
-			: ptr(aPtr)
-		{
-		}
+template <typename T>
+class SimpleDispose {
+public:
+    static void clear(T* ptr)
+    {
+        if (ptr) {
+            ptr->dispose();
+        }
+    }
+};
 
-		~AutoImpl()
-		{
-			Clear::clear(ptr);
-		}
+template <typename Where, template <typename W> class Clear = SimpleDelete>
+class AutoPtr {
+public:
+    AutoPtr(Where* v = nullptr)
+        : ptr(v)
+    {
+    }
 
-		AutoImpl<T, Clear>& operator =(T* aPtr)
-		{
-			Clear::clear(ptr);
-			ptr = aPtr;
-			return *this;
-		}
+    AutoPtr(const AutoPtr&) = delete;
 
-		operator T* ()
-		{
-			return ptr;
-		}
+    AutoPtr(AutoPtr&& v) noexcept
+        : ptr(v.ptr)
+    {
+        v.ptr = nullptr;
+    }
 
-		operator const T* () const
-		{
-			return ptr;
-		}
+    ~AutoPtr()
+    {
+        Clear<Where>::clear(ptr);
+    }
 
-		bool operator !() const
-		{
-			return !ptr;
-		}
+    void operator=(const AutoPtr&) = delete;
 
-		bool hasData() const
-		{
-			return ptr != nullptr;
-		}
+    AutoPtr& operator=(AutoPtr&& r) noexcept
+    {
+        if (this != &r) {
+            ptr = r.ptr;
+            r.ptr = nullptr;
+        }
 
-		T* operator ->()
-		{
-			return ptr;
-		}
+        return *this;
+    }
 
-		T* release()
-		{
-			T* tmp = ptr;
-			ptr = nullptr;
-			return tmp;
-		}
+    AutoPtr& operator=(Where* v)
+    {
+        Clear<Where>::clear(ptr);
+        ptr = v;
+        return *this;
+    }
 
-		void reset(T* aPtr = nullptr)
-		{
-			if (aPtr != ptr)
-			{
-				Clear::clear(ptr);
-				ptr = aPtr;
-			}
-		}
+    Where* get() const
+    {
+        return ptr;
+    }
 
-	private:
-		// not implemented
-		AutoImpl<T, Clear>(AutoImpl<T, Clear>&);
-		void operator =(AutoImpl<T, Clear>&);
+    operator Where*() const
+    {
+        return ptr;
+    }
 
-	private:
-		T* ptr;
-	};
+    bool operator!() const
+    {
+        return !ptr;
+    }
 
-	template <typename T> class AutoDispose : public AutoImpl<T, AutoDisposeClear<T> >
-	{
-	public:
-		AutoDispose(T* ptr = nullptr)
-			: AutoImpl<T, AutoDisposeClear<T> >(ptr)
-		{
-		}
-	};
+    bool hasData() const
+    {
+        return ptr != nullptr;
+    }
 
-	template <typename T> class AutoRelease : public AutoImpl<T, AutoReleaseClear<T> >
-	{
-	public:
-		AutoRelease(T* ptr = nullptr)
-			: AutoImpl<T, AutoReleaseClear<T> >(ptr)
-		{
-		}
-	};
+    Where* operator->() const
+    {
+        return ptr;
+    }
 
-	template <typename T> class AutoDelete : public AutoImpl<T, AutoDeleteClear<T> >
-	{
-	public:
-		AutoDelete(T* ptr = nullptr)
-			: AutoImpl<T, AutoDeleteClear<T> >(ptr)
-		{
-		}
-	};
+    Where* release() noexcept
+    {
+        Where* tmp = ptr;
+        ptr = nullptr;
+        return tmp;
+    }
 
-	template <typename T> class AutoArrayDelete : public AutoImpl<T, AutoArrayDeleteClear<T> >
-	{
-	public:
-		AutoArrayDelete(T* ptr = nullptr)
-			: AutoImpl<T, AutoArrayDeleteClear<T> >(ptr)
-		{
-		}
-	};
-}
+    void reset(Where* v = nullptr)
+    {
+        if (v != ptr) {
+            Clear<Where>::clear(ptr);
+            ptr = v;
+        }
+    }
 
-#endif	// FB_AUTO_PTR_H
+private:
+    Where* ptr;
+};
+
+template <typename Where>
+class AutoDispose : public AutoPtr<Where, SimpleDispose> {
+public:
+    AutoDispose(Where* v = nullptr)
+        : AutoPtr<Where, SimpleDispose>(v)
+    {
+    }
+};
+
+template <typename Where>
+class AutoRelease : public AutoPtr<Where, SimpleRelease> {
+public:
+    AutoRelease(Where* v = nullptr)
+        : AutoPtr<Where, SimpleRelease>(v)
+    {
+    }
+};
+
+template <typename Where>
+class AutoDelete : public AutoPtr<Where, SimpleDelete> {
+public:
+    AutoDelete(Where* v = nullptr)
+        : AutoPtr<Where, SimpleDelete>(v)
+    {
+    }
+};
+
+template <typename Where>
+class AutoDeleteArray : public AutoPtr<Where, ArrayDelete> {
+public:
+    AutoDeleteArray(Where* v = nullptr)
+        : AutoPtr<Where, ArrayDelete>(v)
+    {
+    }
+};
+
+} // namespace Firebird
+
+#endif // FB_AUTO_PTR_H

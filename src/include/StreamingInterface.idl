@@ -63,8 +63,8 @@ interface Disposable : Versioned
 interface Status : Disposable
 {
 	// flags in value returned by getState()
-	const uint STATE_WARNINGS	= 0x01;
-	const uint STATE_ERRORS 	= 0x02;
+	const uint STATE_WARNINGS = 0x01;
+	const uint STATE_ERRORS = 0x02;
 
 	// completion codes - not used in Status, but I must have them somewhere
 	const int RESULT_ERROR = -1;
@@ -81,9 +81,9 @@ interface Status : Disposable
 	void setWarnings(const intptr* value);
 
 	[onError stubError]
-	const intptr* getErrors() const;
+		const intptr* getErrors() const;
 	[onError stubError]
-	const intptr* getWarnings() const;
+		const intptr* getWarnings() const;
 
 	Status clone() const;
 }
@@ -146,7 +146,7 @@ interface Master : Versioned
  * Plugins may access Firebird API through the fbclient library.
  */
 
-// IPluginBase interface - base for master plugin interfaces (factories are registered for them)
+ // IPluginBase interface - base for master plugin interfaces (factories are registered for them)
 interface PluginBase : ReferenceCounted
 {
 	// Additional (compared with Interface) functions getOwner() and setOwner()
@@ -201,7 +201,7 @@ interface FirebirdConf : ReferenceCounted
 	const string asString(uint key);
 	// Use to access boolean values
 	boolean asBoolean(uint key);
-version:		// 3.0 => 4.0
+	version:		// 3.0 => 4.0
 	// Use to access version of configuration manager serving this interface
 	// Format: major byte, minor byte, buildno 2-byte
 	uint getVersion(Status status);
@@ -230,7 +230,7 @@ interface PluginModule : Versioned
 {
 	void doClean();
 
-version:		// 3.0.3 => 3.0.4
+	version:		// 3.0.3 => 3.0.4
 	// Used to release resources allocated per-thread
 	void threadDetach();
 }
@@ -271,7 +271,7 @@ interface PluginManager : Versioned
 	// If caller already has an interface for firebird.conf, it may be passed here
 	// If parameter is missing, plugins will get access to default (non database specific) config
 	PluginSet getPlugins(Status status, uint pluginType,
-						const string namesList, FirebirdConf firebirdConf);
+		const string namesList, FirebirdConf firebirdConf);
 	// Get generic config interface for given file
 	Config getConfig(Status status, const string filename);
 	// Plugins must be released using this function - use of plugin's release()
@@ -324,7 +324,7 @@ interface ConfigManager : Versioned
 	const string getInstallDirectory();
 	const string getRootDirectory();
 
-version:		// 3.0 => 4.0
+	version:		// 3.0 => 4.0
 	const string getDefaultSecurityDb();
 }
 
@@ -342,32 +342,32 @@ interface EventCallback : ReferenceCounted
 interface Blob : ReferenceCounted
 {
 	void getInfo(Status status,
-						 uint itemsLength, const uchar* items,
-						 uint bufferLength, uchar* buffer);
+		uint itemsLength, const uchar* items,
+		uint bufferLength, uchar* buffer);
 
 	[notImplemented(Status::RESULT_ERROR)]
-	int getSegment(Status status, uint bufferLength, void* buffer, uint* segmentLength);
+		int getSegment(Status status, uint bufferLength, void* buffer, uint* segmentLength);
 
 	void putSegment(Status status, uint length,
-									const void* buffer);
+		const void* buffer);
 	void deprecatedCancel(Status status);
 	void deprecatedClose(Status status);
 	int seek(Status status, int mode, int offset);			// returns position
 
-version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedCancel(status) endif]
-	void cancel(Status status);
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedClose(status) endif]
-	void close(Status status);
+	version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedCancel(status) endif]
+		void cancel(Status status);
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedClose(status) endif]
+		void close(Status status);
 }
 
 interface Transaction : ReferenceCounted
 {
 	void getInfo(Status status,
-						 uint itemsLength, const uchar* items,
-						 uint bufferLength, uchar* buffer);
+		uint itemsLength, const uchar* items,
+		uint bufferLength, uchar* buffer);
 	void prepare(Status status,
-						 uint msgLength, const uchar* message);
+		uint msgLength, const uchar* message);
 	void deprecatedCommit(Status status);
 	void commitRetaining(Status status);
 	void deprecatedRollback(Status status);
@@ -377,13 +377,13 @@ interface Transaction : ReferenceCounted
 	Transaction validate(Status status, Attachment attachment);
 	Transaction enterDtc(Status status);
 
-version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedCommit(status) endif]
-	void commit(Status status);
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedRollback(status) endif]
-	void rollback(Status status);
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedDisconnect(status) endif]
-	void disconnect(Status status);
+	version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedCommit(status) endif]
+		void commit(Status status);
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedRollback(status) endif]
+		void rollback(Status status);
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedDisconnect(status) endif]
+		void disconnect(Status status);
 }
 
 interface MessageMetadata : ReferenceCounted
@@ -405,7 +405,7 @@ interface MessageMetadata : ReferenceCounted
 	MetadataBuilder getBuilder(Status status);
 	uint getMessageLength(Status status);
 
-version:	// 3.0 => 4.0
+	version:	// 3.0 => 4.0
 	uint getAlignment(Status status);
 	uint getAlignedLength(Status status);
 }
@@ -425,7 +425,7 @@ interface MetadataBuilder : ReferenceCounted
 
 	MessageMetadata getMetadata(Status status);
 
-version:	// 3.0 => 4.0
+	version:	// 3.0 => 4.0
 	void setField(Status status, uint index, const string field);
 	void setRelation(Status status, uint index, const string relation);
 	void setOwner(Status status, uint index, const string owner);
@@ -453,27 +453,27 @@ interface ResultSet : ReferenceCounted
 	// Please do not use it!
 	void setDelayedOutputFormat(Status status, MessageMetadata format);
 
-version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedClose(status) endif]
-	void close(Status status);
+	version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedClose(status) endif]
+		void close(Status status);
 
-version:	// 4.0.1 => 5.0
+	version:	// 4.0.1 => 5.0
 	void getInfo(Status status,
-				 uint itemsLength, const uchar* items,
-				 uint bufferLength, uchar* buffer);
+		uint itemsLength, const uchar* items,
+		uint bufferLength, uchar* buffer);
 }
 
 interface Statement : ReferenceCounted
 {
 	// Prepare flags.
-	const uint PREPARE_PREFETCH_NONE 				= 0x00;
-	const uint PREPARE_PREFETCH_TYPE 				= 0x01;
-	const uint PREPARE_PREFETCH_INPUT_PARAMETERS 	= 0x02;
-	const uint PREPARE_PREFETCH_OUTPUT_PARAMETERS	= 0x04;
-	const uint PREPARE_PREFETCH_LEGACY_PLAN			= 0x08;
-	const uint PREPARE_PREFETCH_DETAILED_PLAN		= 0x10;
-	const uint PREPARE_PREFETCH_AFFECTED_RECORDS	= 0x20;	// not used yet
-	const uint PREPARE_PREFETCH_FLAGS				= 0x40;
+	const uint PREPARE_PREFETCH_NONE = 0x00;
+	const uint PREPARE_PREFETCH_TYPE = 0x01;
+	const uint PREPARE_PREFETCH_INPUT_PARAMETERS = 0x02;
+	const uint PREPARE_PREFETCH_OUTPUT_PARAMETERS = 0x04;
+	const uint PREPARE_PREFETCH_LEGACY_PLAN = 0x08;
+	const uint PREPARE_PREFETCH_DETAILED_PLAN = 0x10;
+	const uint PREPARE_PREFETCH_AFFECTED_RECORDS = 0x20;	// not used yet
+	const uint PREPARE_PREFETCH_FLAGS = 0x40;
 	const uint PREPARE_PREFETCH_METADATA =
 		PREPARE_PREFETCH_TYPE | PREPARE_PREFETCH_FLAGS |
 		PREPARE_PREFETCH_INPUT_PARAMETERS | PREPARE_PREFETCH_OUTPUT_PARAMETERS;
@@ -482,15 +482,15 @@ interface Statement : ReferenceCounted
 		PREPARE_PREFETCH_AFFECTED_RECORDS;
 
 	// Statement flags.
-	const uint FLAG_HAS_CURSOR	 					= 0x01;
-	const uint FLAG_REPEAT_EXECUTE				 	= 0x02;
+	const uint FLAG_HAS_CURSOR = 0x01;
+	const uint FLAG_REPEAT_EXECUTE = 0x02;
 
 	// Cursor flags.
-	const uint CURSOR_TYPE_SCROLLABLE 				= 0x01;
+	const uint CURSOR_TYPE_SCROLLABLE = 0x01;
 
 	void getInfo(Status status,
-								 uint itemsLength, const uchar* items,
-								 uint bufferLength, uchar* buffer);
+		uint itemsLength, const uchar* items,
+		uint bufferLength, uchar* buffer);
 	uint getType(Status status);
 	const string getPlan(Status status, boolean detailed);
 	uint64 getAffectedRecords(Status status);
@@ -504,7 +504,7 @@ interface Statement : ReferenceCounted
 	void deprecatedFree(Status status);
 	uint getFlags(Status status);
 
-version:	// 3.0 => 4.0
+	version:	// 3.0 => 4.0
 	// Statement execution timeout, milliseconds
 	uint getTimeout(Status status);
 	void setTimeout(Status status, uint timeOut);
@@ -517,9 +517,9 @@ version:	// 3.0 => 4.0
 		void* inBuffer, MessageMetadata outMetadata, uint parLength, const uchar* par);
 	*/
 
-version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedFree(status) endif]
-	void free(Status status);
+	version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedFree(status) endif]
+		void free(Status status);
 }
 
 interface Batch : ReferenceCounted
@@ -562,12 +562,12 @@ interface Batch : ReferenceCounted
 	void setDefaultBpb(Status status, uint parLength, const uchar* par);
 	void deprecatedClose(Status status);
 
-version:	// 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedClose(status) endif]
-	void close(Status status);
+	version:	// 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedClose(status) endif]
+		void close(Status status);
 	void getInfo(Status status,
-				 uint itemsLength, const uchar* items,
-				 uint bufferLength, uchar* buffer);
+		uint itemsLength, const uchar* items,
+		uint bufferLength, uchar* buffer);
 }
 
 interface BatchCompletionState : Disposable
@@ -601,51 +601,51 @@ interface ReplicationBatch : Versioned
 */
 interface Replicator : ReferenceCounted
 {
-/*
-	void process(Status status, ReplicationBatch batch);
-*/
+	/*
+		void process(Status status, ReplicationBatch batch);
+	*/
 	void process(Status status, uint length, const uchar* data);
 	void deprecatedClose(Status status);
 
-version:	// 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedClose(status) endif]
-	void close(Status status);
+	version:	// 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedClose(status) endif]
+		void close(Status status);
 }
 
 interface Request : ReferenceCounted
 {
 	void receive(Status status, int level, uint msgType,
-						 uint length, void* message);
+		uint length, void* message);
 	void send(Status status, int level, uint msgType,
-					  uint length, const void* message);
+		uint length, const void* message);
 	void getInfo(Status status, int level,
-						 uint itemsLength, const uchar* items,
-						 uint bufferLength, uchar* buffer);
+		uint itemsLength, const uchar* items,
+		uint bufferLength, uchar* buffer);
 	void start(Status status, Transaction tra, int level);
 	void startAndSend(Status status, Transaction tra, int level, uint msgType,
-							  uint length, const void* message);
+		uint length, const void* message);
 	void unwind(Status status, int level);
 	void deprecatedFree(Status status);
 
-version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedFree(status) endif]
-	void free(Status status);
+	version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedFree(status) endif]
+		void free(Status status);
 }
 
 interface Events : ReferenceCounted
 {
 	void deprecatedCancel(Status status);
 
-version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedCancel(status) endif]
-	void cancel(Status status);
+	version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedCancel(status) endif]
+		void cancel(Status status);
 }
 
 interface Attachment : ReferenceCounted
 {
 	void getInfo(Status status,
-						 uint itemsLength, const uchar* items,
-						 uint bufferLength, uchar* buffer);
+		uint itemsLength, const uchar* items,
+		uint bufferLength, uchar* buffer);
 	Transaction startTransaction(Status status,
 		uint tpbLength, const uchar* tpb);
 	Transaction reconnectTransaction(Status status,
@@ -653,21 +653,21 @@ interface Attachment : ReferenceCounted
 	Request compileRequest(Status status,
 		uint blrLength, const uchar* blr);
 	void transactRequest(Status status, Transaction transaction,
-								 uint blrLength, const uchar* blr,
-								 uint inMsgLength, const uchar* inMsg,
-								 uint outMsgLength, uchar* outMsg);
+		uint blrLength, const uchar* blr,
+		uint inMsgLength, const uchar* inMsg,
+		uint outMsgLength, uchar* outMsg);
 	Blob createBlob(Status status, Transaction transaction, ISC_QUAD* id,
-							 uint bpbLength, const uchar* bpb);
+		uint bpbLength, const uchar* bpb);
 	Blob openBlob(Status status, Transaction transaction, ISC_QUAD* id,
-						   uint bpbLength, const uchar* bpb);
+		uint bpbLength, const uchar* bpb);
 	int getSlice(Status status, Transaction transaction, ISC_QUAD* id,
-						 uint sdlLength, const uchar* sdl,
-						 uint paramLength, const uchar* param,
-						 int sliceLength, uchar* slice);
+		uint sdlLength, const uchar* sdl,
+		uint paramLength, const uchar* param,
+		int sliceLength, uchar* slice);
 	void putSlice(Status status, Transaction transaction, ISC_QUAD* id,
-						  uint sdlLength, const uchar* sdl,
-						  uint paramLength, const uchar* param,
-						  int sliceLength, uchar* slice);
+		uint sdlLength, const uchar* sdl,
+		uint paramLength, const uchar* param,
+		int sliceLength, uchar* slice);
 	void executeDyn(Status status, Transaction transaction, uint length,
 		const uchar* dyn);
 	Statement prepare(Status status, Transaction tra,
@@ -680,13 +680,13 @@ interface Attachment : ReferenceCounted
 		MessageMetadata inMetadata, void* inBuffer, MessageMetadata outMetadata,
 		const string cursorName, uint cursorFlags);
 	Events queEvents(Status status, EventCallback callback,
-						   uint length, const uchar* events);
+		uint length, const uchar* events);
 	void cancelOperation(Status status, int option);
 	void ping(Status status);
 	void deprecatedDetach(Status status);
 	void deprecatedDropDatabase(Status status);
 
-version:	// 3.0 => 4.0
+	version:	// 3.0 => 4.0
 	// Idle attachment timeout, seconds
 	uint getIdleTimeout(Status status);
 	void setIdleTimeout(Status status, uint timeOut);
@@ -707,28 +707,28 @@ version:	// 3.0 => 4.0
 
 	Replicator createReplicator(Status status);
 
-version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedDetach(status) endif]
-	void detach(Status status);
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedDropDatabase(status) endif]
-	void dropDatabase(Status status);
+	version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedDetach(status) endif]
+		void detach(Status status);
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedDropDatabase(status) endif]
+		void dropDatabase(Status status);
 }
 
 interface Service : ReferenceCounted
 {
 	void deprecatedDetach(Status status);
 	void query(Status status,
-					   uint sendLength, const uchar* sendItems,
-					   uint receiveLength, const uchar* receiveItems,
-					   uint bufferLength, uchar* buffer);
+		uint sendLength, const uchar* sendItems,
+		uint receiveLength, const uchar* receiveItems,
+		uint bufferLength, uchar* buffer);
 	void start(Status status,
-					   uint spbLength, const uchar* spb);
+		uint spbLength, const uchar* spb);
 
-version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
-	[notImplementedAction if ::FB_UsedInYValve then defaultAction else call deprecatedDetach(status) endif]
-	void detach(Status status);
+	version:	// 3.0.7 => 3.0.8, 4.0.0 => 4.0.1
+	[notImplementedAction if::FB_UsedInYValve then defaultAction else call deprecatedDetach(status) endif]
+		void detach(Status status);
 
-version:	// 3.0.9 => 3.0.10, 4.0.1 => 4.0.2
+	version:	// 3.0.9 => 3.0.10, 4.0.1 => 4.0.2
 	void cancel(Status status);
 }
 
@@ -739,7 +739,7 @@ interface Provider : PluginBase
 	Attachment createDatabase(Status status, const string fileName,
 		uint dpbLength, const uchar* dpb);
 	Service attachServiceManager(Status status, const string service,
-		 uint spbLength, const uchar* spb);
+		uint spbLength, const uchar* spb);
 	void shutdown(Status status, uint timeout, const int reason);
 	void setDbCryptCallback(Status status, CryptKeyCallback cryptCallback);
 }
@@ -795,7 +795,7 @@ interface ClientBlock : ReferenceCounted
 	const uchar* getData(uint* length);
 	void putData(Status status, uint length, const void* data);
 	CryptKey newKey(Status status);
-version:	// 3.0 => 4.0
+	version:	// 3.0 => 4.0
 	AuthBlock getAuthBlock(Status status);
 }
 
@@ -803,9 +803,9 @@ version:	// 3.0 => 4.0
 interface Server : Auth
 {
 	[notImplemented(Auth::AUTH_FAILED)]
-	int authenticate(Status status, ServerBlock sBlock, Writer writerInterface);
+		int authenticate(Status status, ServerBlock sBlock, Writer writerInterface);
 
-version:		// 3.0.1 => 4.0
+	version:		// 3.0.1 => 4.0
 	void setDbCryptCallback(Status status, CryptKeyCallback cryptCallback);
 }
 
@@ -813,7 +813,7 @@ version:		// 3.0.1 => 4.0
 interface Client : Auth
 {
 	[notImplemented(Auth::AUTH_FAILED)]
-	int authenticate(Status status, ClientBlock cBlock);
+		int authenticate(Status status, ClientBlock cBlock);
 }
 
 interface UserField : Versioned
@@ -876,7 +876,7 @@ interface LogonInfo : Versioned
 	const string remoteAddress();
 	const uchar* authBlock(uint* length);
 
-version:
+	version:
 	Attachment attachment(Status status);
 	Transaction transaction(Status status);
 }
@@ -918,7 +918,7 @@ interface WireCryptPlugin : PluginBase
 	void encrypt(Status status, uint length, const void* from, void* to);
 	void decrypt(Status status, uint length, const void* from, void* to);
 
-version:
+	version:
 	const uchar* getSpecificData(Status status, const string keyType, uint* length);
 	void setSpecificData(Status status, const string keyType, uint length, const uchar* data);
 }
@@ -960,7 +960,7 @@ interface KeyHolderPlugin : PluginBase
 	// It should just return NULL in this case
 	CryptKeyCallback keyHandle(Status status, const string keyName);
 
-version:		// 3.0.1 => 4.0
+	version:		// 3.0.1 => 4.0
 	// With returning true here KeyHolder attachment can use only keys, provided by this KeyHolder.
 	// Use of keys, got by database crypt plugin from other attachments, is prohibited.
 	boolean useOnlyOwnKeys(Status status);
@@ -987,7 +987,7 @@ interface DbCryptPlugin : PluginBase
 	void encrypt(Status status, uint length, const void* from, void* to);
 	void decrypt(Status status, uint length, const void* from, void* to);
 
-version:		// 3.0.1 => 4.0
+	version:		// 3.0.1 => 4.0
 	// Crypto manager may pass some additional info to plugin
 	void setInfo(Status status, DbCryptInfo info);
 }
@@ -1193,7 +1193,7 @@ interface Util : Versioned
 	XpbBuilder getXpbBuilder(Status status, uint kind, const uchar* buf, uint len);
 	uint setOffsets(Status status, MessageMetadata metadata, OffsetsCallback callback);
 
-version:	// 3.0 => 4.0 Alpha1
+	version:	// 3.0 => 4.0 Alpha1
 	DecFloat16 getDecFloat16(Status status);
 	DecFloat34 getDecFloat34(Status status);
 	void decodeTimeTz(Status status, const ISC_TIME_TZ* timeTz, uint* hours, uint* minutes, uint* seconds,
@@ -1205,7 +1205,7 @@ version:	// 3.0 => 4.0 Alpha1
 	void encodeTimeStampTz(Status status, ISC_TIMESTAMP_TZ* timeStampTz, uint year, uint month, uint day,
 		uint hours, uint minutes, uint seconds, uint fractions, const string timeZone);
 
-version:	// 4.0 Beta1 => 4.0 Beta2
+	version:	// 4.0 Beta1 => 4.0 Beta2
 	Int128 getInt128(Status status);
 	void decodeTimeTzEx(Status status, const ISC_TIME_TZ_EX* timeTz, uint* hours, uint* minutes, uint* seconds,
 		uint* fractions, uint timeZoneBufferLength, string timeZoneBuffer);
@@ -1305,7 +1305,7 @@ interface TraceTransaction : Versioned
 	uint getIsolation();
 	PerformanceInfo* getPerf();
 
-version: // 3.0.4 -> 3.0.5
+	version: // 3.0.4 -> 3.0.5
 	int64 getInitialID();
 	int64 getPreviousID();
 }
@@ -1315,7 +1315,7 @@ interface TraceParams : Versioned
 	uint getCount();
 	const dsc* getParam(uint idx);
 
-version:
+	version:
 	const string getTextUTF8(Status status, uint idx);
 }
 
@@ -1360,6 +1360,11 @@ interface TraceProcedure : Versioned
 	const string getProcName();
 	TraceParams getInputs();
 	PerformanceInfo* getPerf();
+
+	version: // 4.0 -> 5.0
+	int64 getStmtID();
+	const string getPlan();
+	const string getExplainedPlan();
 }
 
 interface TraceFunction : Versioned
@@ -1368,6 +1373,11 @@ interface TraceFunction : Versioned
 	TraceParams getInputs();
 	TraceParams getResult();
 	PerformanceInfo* getPerf();
+
+	version: // 4.0 -> 5.0
+	int64 getStmtID();
+	const string getPlan();
+	const string getExplainedPlan();
 }
 
 interface TraceTrigger : Versioned
@@ -1385,6 +1395,11 @@ interface TraceTrigger : Versioned
 	int getAction();
 	int getWhich();
 	PerformanceInfo* getPerf();
+
+	version: // 4.0 -> 5.0
+	int64 getStmtID();
+	const string getPlan();
+	const string getExplainedPlan();
 }
 
 interface TraceServiceConnection : TraceConnection
@@ -1414,7 +1429,7 @@ interface TraceSweepInfo : Versioned
 interface TraceLogWriter : ReferenceCounted
 {
 	uint write(const void* buf, uint size);
-version: // 3.0.4 -> 3.0.5
+	version: // 3.0.4 -> 3.0.5
 	uint write_s(Status status, const void* buf, uint size);
 }
 
@@ -1444,86 +1459,86 @@ interface TracePlugin : ReferenceCounted
 	// Create/close attachment
 
 	[notImplemented(true)]
-	boolean trace_attach(TraceDatabaseConnection connection, boolean create_db, uint att_result);
+		boolean trace_attach(TraceDatabaseConnection connection, boolean create_db, uint att_result);
 
 	[notImplemented(true)]
-	boolean trace_detach(TraceDatabaseConnection connection, boolean drop_db);
+		boolean trace_detach(TraceDatabaseConnection connection, boolean drop_db);
 
 	// Start/end transaction
 
 	[notImplemented(true)]
-	boolean trace_transaction_start(TraceDatabaseConnection connection, TraceTransaction transaction,
+		boolean trace_transaction_start(TraceDatabaseConnection connection, TraceTransaction transaction,
 			uint tpb_length, const uchar* tpb, uint tra_result);
 
 	[notImplemented(true)]
-	boolean trace_transaction_end(TraceDatabaseConnection connection, TraceTransaction transaction,
+		boolean trace_transaction_end(TraceDatabaseConnection connection, TraceTransaction transaction,
 			boolean commit, boolean retain_context, uint tra_result);
 
 	// Stored procedures and triggers execution
 
 	[notImplemented(true)]
-	boolean trace_proc_execute (TraceDatabaseConnection connection, TraceTransaction transaction, TraceProcedure procedure,
+		boolean trace_proc_execute(TraceDatabaseConnection connection, TraceTransaction transaction, TraceProcedure procedure,
 			boolean started, uint proc_result);
 
 	[notImplemented(true)]
-	boolean trace_trigger_execute(TraceDatabaseConnection connection, TraceTransaction transaction, TraceTrigger trigger,
+		boolean trace_trigger_execute(TraceDatabaseConnection connection, TraceTransaction transaction, TraceTrigger trigger,
 			boolean started, uint trig_result);
 
 	// Assignment to context variables
 
 	[notImplemented(true)]
-	boolean trace_set_context(TraceDatabaseConnection connection, TraceTransaction transaction, TraceContextVariable variable);
+		boolean trace_set_context(TraceDatabaseConnection connection, TraceTransaction transaction, TraceContextVariable variable);
 
 	// DSQL statement lifecycle
 
 	[notImplemented(true)]
-	boolean trace_dsql_prepare(TraceDatabaseConnection connection, TraceTransaction transaction,
+		boolean trace_dsql_prepare(TraceDatabaseConnection connection, TraceTransaction transaction,
 			TraceSQLStatement statement, int64 time_millis, uint req_result);
 
 	[notImplemented(true)]
-	boolean trace_dsql_free(TraceDatabaseConnection connection, TraceSQLStatement statement, uint option);
+		boolean trace_dsql_free(TraceDatabaseConnection connection, TraceSQLStatement statement, uint option);
 
 	[notImplemented(true)]
-	boolean trace_dsql_execute(TraceDatabaseConnection connection, TraceTransaction transaction, TraceSQLStatement statement,
+		boolean trace_dsql_execute(TraceDatabaseConnection connection, TraceTransaction transaction, TraceSQLStatement statement,
 			boolean started, uint req_result);
 
 	// BLR requests
 
 	[notImplemented(true)]
-	boolean trace_blr_compile(TraceDatabaseConnection connection, TraceTransaction transaction,
+		boolean trace_blr_compile(TraceDatabaseConnection connection, TraceTransaction transaction,
 			TraceBLRStatement statement, int64 time_millis, uint req_result);
 
 	[notImplemented(true)]
-	boolean trace_blr_execute(TraceDatabaseConnection connection, TraceTransaction transaction,
+		boolean trace_blr_execute(TraceDatabaseConnection connection, TraceTransaction transaction,
 			TraceBLRStatement statement, uint req_result);
 
 	// DYN requests
 
 	[notImplemented(true)]
-	boolean trace_dyn_execute(TraceDatabaseConnection connection, TraceTransaction transaction,
+		boolean trace_dyn_execute(TraceDatabaseConnection connection, TraceTransaction transaction,
 			TraceDYNRequest request, int64 time_millis, uint req_result);
 
 	// Using the services
 
 	[notImplemented(true)]
-	boolean trace_service_attach(TraceServiceConnection service, uint att_result);
+		boolean trace_service_attach(TraceServiceConnection service, uint att_result);
 
 	[notImplemented(true)]
-	boolean trace_service_start(TraceServiceConnection service, uint switches_length, const string switches,
+		boolean trace_service_start(TraceServiceConnection service, uint switches_length, const string switches,
 			uint start_result);
 
 	[notImplemented(true)]
-	boolean trace_service_query(TraceServiceConnection service, uint send_item_length,
+		boolean trace_service_query(TraceServiceConnection service, uint send_item_length,
 			const uchar* send_items, uint recv_item_length,
 			const uchar* recv_items, uint query_result);
 
 	[notImplemented(true)]
-	boolean trace_service_detach(TraceServiceConnection service, uint detach_result);
+		boolean trace_service_detach(TraceServiceConnection service, uint detach_result);
 
 	// Errors happened
 
 	[notImplemented(true)]
-	boolean trace_event_error(TraceConnection connection, TraceStatusVector status, const string function);
+		boolean trace_event_error(TraceConnection connection, TraceStatusVector status, const string function);
 
 	// Sweep activity
 
@@ -1533,19 +1548,31 @@ interface TracePlugin : ReferenceCounted
 	const uint SWEEP_STATE_PROGRESS = 4;
 
 	[notImplemented(true)]
-	boolean trace_event_sweep(TraceDatabaseConnection connection, TraceSweepInfo sweep,
+		boolean trace_event_sweep(TraceDatabaseConnection connection, TraceSweepInfo sweep,
 			uint sweep_state);
 
 	// Stored functions execution
 
 	[notImplemented(true)]
-	boolean trace_func_execute (TraceDatabaseConnection connection, TraceTransaction transaction, TraceFunction function,
-			boolean started, uint func_result);
+		boolean trace_func_execute(TraceDatabaseConnection connection, TraceTransaction transaction,
+			TraceFunction function, boolean started, uint func_result);
 
-version:	// 4.0.1 -> 4.0.2
-	boolean trace_dsql_restart(TraceDatabaseConnection connection, TraceTransaction transaction, TraceSQLStatement statement,
-		uint number);
+	version:	// 4.0.1 -> 4.0.2
+	boolean trace_dsql_restart(TraceDatabaseConnection connection, TraceTransaction transaction,
+		TraceSQLStatement statement, uint number);
 
+	version:	// 4.0 -> 5.0
+
+	// Compilation of stored procedures, functions, triggers
+
+	boolean trace_proc_compile(TraceDatabaseConnection connection, TraceProcedure procedure,
+		int64 time_millis, uint proc_result);
+
+	boolean trace_func_compile(TraceDatabaseConnection connection, TraceFunction function,
+		int64 time_millis, uint func_result);
+
+	boolean trace_trigger_compile(TraceDatabaseConnection connection, TraceTrigger trigger,
+		int64 time_millis, uint trig_result);
 }
 
 // Trace plugin second level factory (this is what is known to PluginManager as "trace plugin")
@@ -1572,7 +1599,10 @@ interface TraceFactory : PluginBase
 	const uint TRACE_EVENT_ERROR = 17;
 	const uint TRACE_EVENT_SWEEP = 18;
 	const uint TRACE_EVENT_FUNC_EXECUTE = 19;
-	const uint TRACE_EVENT_MAX = 20;	// keep it last
+	const uint TRACE_EVENT_PROC_COMPILE = 20;
+	const uint TRACE_EVENT_FUNC_COMPILE = 21;
+	const uint TRACE_EVENT_TRIGGER_COMPILE = 22;
+	const uint TRACE_EVENT_MAX = 23;	// keep it last
 
 	// What notifications does plugin need
 	uint64 trace_needs();
@@ -1692,12 +1722,12 @@ interface ReplicatedTransaction : Disposable
 
 	// ReplicatedRecords parameters point to local objects, do not ever store the pointer.
 	void insertRecord(Status status, const string name,
-					  ReplicatedRecord record);
+		ReplicatedRecord record);
 	void updateRecord(Status status, const string name,
-					  ReplicatedRecord orgRecord,
-					  ReplicatedRecord newRecord);
+		ReplicatedRecord orgRecord,
+		ReplicatedRecord newRecord);
 	void deleteRecord(Status status, const string name,
-					  ReplicatedRecord record);
+		ReplicatedRecord record);
 
 	void executeSql(Status status, const string sql);
 	void executeSqlIntl(Status status, uint charset, const string sql);
@@ -1717,7 +1747,7 @@ interface ReplicatedSession : PluginBase
 
 interface ProfilerPlugin : PluginBase
 {
-	void init(Status status, Attachment attachment);
+	void init(Status status, Attachment attachment, uint64 ticksFrequency);
 
 	ProfilerSession startSession(Status status, const string description,
 		const string options, ISC_TIMESTAMP_TZ timestamp);
@@ -1741,55 +1771,123 @@ interface ProfilerSession : Disposable
 	void defineStatement(Status status, int64 statementId, int64 parentStatementId,
 		const string type, const string packageName, const string routineName, const string sqlText);
 
-	//// TODO: Add defineCursor with line/column
+	void defineCursor(int64 statementId, uint cursorId, const string name, uint line, uint column);
 
 	void defineRecordSource(int64 statementId, uint cursorId, uint recSourceId,
-		const string accessPath, uint parentRecSourceId);
+		uint level, const string accessPath, uint parentRecSourceId);
 
-	void onRequestStart(Status status, int64 requestId, int64 statementId, int64 callerRequestId,
-		ISC_TIMESTAMP_TZ timestamp);
+	void onRequestStart(Status status, int64 statementId, int64 requestId,
+		int64 callerStatementId, int64 callerRequestId, ISC_TIMESTAMP_TZ timestamp);
 
-	void onRequestFinish(Status status, int64 requestId, ISC_TIMESTAMP_TZ timestamp, ProfilerStats stats);
+	void onRequestFinish(Status status, int64 statementId, int64 requestId,
+		ISC_TIMESTAMP_TZ timestamp, ProfilerStats stats);
 
-	void beforePsqlLineColumn(int64 requestId, uint line, uint column);
-	void afterPsqlLineColumn(int64 requestId, uint line, uint column, ProfilerStats stats);
+	void beforePsqlLineColumn(int64 statementId, int64 requestId, uint line, uint column);
+	void afterPsqlLineColumn(int64 statementId, int64 requestId, uint line, uint column, ProfilerStats stats);
 
-	void beforeRecordSourceOpen(int64 requestId, uint cursorId, uint recSourceId);
-	void afterRecordSourceOpen(int64 requestId, uint cursorId, uint recSourceId, ProfilerStats stats);
+	void beforeRecordSourceOpen(int64 statementId, int64 requestId, uint cursorId, uint recSourceId);
+	void afterRecordSourceOpen(int64 statementId, int64 requestId, uint cursorId, uint recSourceId,
+		ProfilerStats stats);
 
-	void beforeRecordSourceGetRecord(int64 requestId, uint cursorId, uint recSourceId);
-	void afterRecordSourceGetRecord(int64 requestId, uint cursorId, uint recSourceId, ProfilerStats stats);
+	void beforeRecordSourceGetRecord(int64 statementId, int64 requestId, uint cursorId, uint recSourceId);
+	void afterRecordSourceGetRecord(int64 statementId, int64 requestId, uint cursorId, uint recSourceId,
+		ProfilerStats stats);
 }
 
 interface ProfilerStats : Versioned
 {
-	uint64 getElapsedTime();
+	uint64 getElapsedTicks();
 }
 
-// Extends method for store BLOB
-interface ApplierTransaction: ReplicatedTransaction
+
+////////////////////////////////////
+// Firebird Streaming interfaces
+////////////////////////////////////
+
+interface StreamedField : Versioned
 {
+	// Return field name (or nullptr on error)
+	const string getName();
+	// Return field type (or zero if the field does not exist)
+	uint getType();
+	// Return field subtype, if applicable
+	int getSubType();
+	// Return field scale (behavior is undefined for non-numeric fields)
+	int getScale();
+	// Return maximum length of the field data in bytes
+	uint getLength();
+	// Return character set without collation part for text or CLOB fields
+	uint getCharSet();
+	// Return pointer to data (or nullptr for NULL values)
+	const void* getData();
+	// Returns true if the field is key
+	boolean isKey();
+	// Returns the position of a field in a key
+	uint keyPosition();
+}
+
+interface StreamedRecord : Versioned
+{
+	// Return count of fields
+	uint getCount();
+	// Return StreamedField with given index (or nullptr if index is invalid).
+	// Returned reference is valid until next call of getField() or end of the record life.
+	StreamedField getField(uint index);
+
+	// Return size of raw data
+	uint getRawLength();
+	// Dirty method to return record buffer in internal format
+	const uchar* getRawData();
+}
+
+interface StreamedTransaction : Disposable
+{
+	// Last chance to return an error and make commit to be aborted.
+	// The transaction still can be rolled back on error happened after this call.
+	void prepare(Status status);
+	// An error returned from these methods may be logged but do not abort process.
+	void commit(Status status);
+	void rollback(Status status);
+
+	void startSavepoint(Status status);
+	void releaseSavepoint(Status status);
+	void rollbackSavepoint(Status status);
+
+	// StreamedRecords parameters point to local objects, do not ever store the pointer.
+	void insertRecord(Status status, const string name,
+		StreamedRecord record);
+	void updateRecord(Status status, const string name,
+		StreamedRecord orgRecord,
+		StreamedRecord newRecord);
+	void deleteRecord(Status status, const string name,
+		StreamedRecord record);
+
+	void executeSql(Status status, const string sql);
+	void executeSqlIntl(Status status, uint charset, const string sql);
+
 	void storeBlob(Status status, ISC_QUAD* blob_id, int64 length, const uchar* data);
 }
 
 struct SegmentHeaderInfo;
 
-interface ReplicateApplierPlugin: PluginBase
+interface StreamPlugin : PluginBase
 {
 	boolean init(Status status, Attachment attachment);
 	void finish(Status status);
 	void startSegment(Status status, SegmentHeaderInfo* segmentHeader);
 	void finishSegment(Status status);
-	ApplierTransaction startTransaction(Status status, int64 number);
+	void startBlock(Status status, uint blockOffset);
+	void setSegmentOffset(uint offset);
+	StreamedTransaction startTransaction(Status status, int64 number);
 	void setSequence(Status status, const string name, int64 value);
 	boolean matchTable(Status status, const string relationName);
-	ApplierTransaction getTransaction(Status status, int64 number);
+	StreamedTransaction getTransaction(Status status, int64 number);
 	void cleanupTransaction(Status status, int64 number);
 	void cleanupTransactions(Status status);
 	void log(uint level, const string message);
 }
 
-interface StreamLogger : ReferenceCounted
+interface StreamLogger : Disposable
 {
 	const uint LEVEL_TRACE = 0;
 	const uint LEVEL_DEBUG = 1;
@@ -1800,6 +1898,8 @@ interface StreamLogger : ReferenceCounted
 	const uint LEVEL_OFF = 6;
 
     uint getLevel();
+	void setLevel(uint logLevel);
+	
 	void log(uint level, const string message);
 	void trace(const string message);
 	void debug(const string message);
@@ -1807,16 +1907,71 @@ interface StreamLogger : ReferenceCounted
 	void warning(const string message);
 	void error(const string message);
 	void critical(const string message);
+	
+	void flush();
 }
 
-interface ReplicateApplierFactory : Versioned
+interface StringConverter : ReferenceCounted
 {
-	ReplicateApplierPlugin createPlugin(Status status, Config config, StreamLogger logger);
+	int getMaxCharSize();
+	int getMinCharSize();
+
+	uint getCharsetId();
+	const string getCharsetName();
+
+	uint64 toUtf8(Status status, const string src, uint64 srcSize, string destBuffer, uint64 destBufferSize);
+	uint64 fromUtf8(Status status, const string src, uint64 srcSize, string destBuffer, uint64 destBufferSize);
+
+	// For other unicode varians WCS, UTF-16, UTF-32 buffer present as void*
+	uint64 toUtf16(Status status, const string src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+	uint64 fromUtf16(Status status, const void* src, uint64 srcSize, string destBuffer, uint64 destBufferSize);
+
+	uint64 toUtf32(Status status, const string src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+	uint64 fromUtf32(Status status, const void* src, uint64 srcSize, string destBuffer, uint64 destBufferSize);
+
+	uint64 toWCS(Status status, const string src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+	uint64 fromWCS(Status status, const void* src, uint64 srcSize, string destBuffer, uint64 destBufferSize);
+}
+
+interface StringEncodeUtils : Disposable
+{
+	StringConverter getConverterById(Status status, uint charsetId);
+	StringConverter getConverterByName(Status status, const string charsetName);
+
+	uint64 convertCharset(Status status, StringConverter srcConveter, StringConverter dstConveter, 
+						  const string src, uint64 srcSize, string destBuffer, uint64 destBufferSize);
+
+	// UTF-8 to other Unicode
+	uint64 convertUtf8ToWCS(Status status, const string src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+	uint64 convertUtf8ToUtf16(Status status, const string src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+	uint64 convertUtf8ToUtf32(Status status, const string src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+
+	// UTF-16 to other Unicode
+	uint64 convertUtf16ToWCS(Status status, const void* src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+	uint64 convertUtf16ToUtf8(Status status, const void* src, uint64 srcSize, string destBuffer, uint64 destBufferSize);
+	uint64 convertUtf16ToUtf32(Status status, const void* src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+
+	// UTF-32 to other Unicode
+	uint64 convertUtf32ToWCS(Status status, const void* src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+	uint64 convertUtf32ToUtf8(Status status, const void* src, uint64 srcSize, string destBuffer, uint64 destBufferSize);
+	uint64 convertUtf32ToUtf16(Status status, const void* src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+
+	// WCS to other Unicode
+	uint64 convertWCSToUtf8(Status status, const void* src, uint64 srcSize, string destBuffer, uint64 destBufferSize);
+	uint64 convertWCSToUtf16(Status status, const void* src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+	uint64 convertWCSToUtf32(Status status, const void* src, uint64 srcSize, void* destBuffer, uint64 destBufferSize);
+}
+
+interface StreamPluginFactory : Versioned
+{
+	StreamPlugin createPlugin(Status status, Config config, StringEncodeUtils encodeUtils, StreamLogger logger);
 }
 
 interface StreamPluginManager : Disposable
 {
 	// Main function called by plugin modules in fb_stream_plugin()
-	void registerPluginFactory(const string pluginName, ReplicateApplierFactory factory);
-	ReplicateApplierPlugin getPlugin(Status status, const string pluginName, Config config, StreamLogger logger);
+	void registerPluginFactory(const string pluginName, StreamPluginFactory factory);
+	StreamPlugin getPlugin(Status status, const string pluginName, Config config);
 }
+
+

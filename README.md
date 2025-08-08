@@ -4,13 +4,13 @@ Here are examples of writing plugins for Firebird streaming technology.
 
 Firebird streaming is a technology for asynchronous publication of events that occur during the analysis of the replication log.
 
-The `fb_streaming_svc` service (daemon) is used to process events. The service monitors new replication log files, analyzes them, and generates events that are processed by one of the plugins. A detailed description of the `fb_streaming_svc` service can be found in the document [fb_streaming_svc Service](doc/fb_streaming_svc_en.md).
+The `fb_streaming` service (daemon) is used to process events. The service monitors new replication log files, analyzes them, and generates events that are processed by one of the plugins. A detailed description of the `fb_streaming` service can be found in the document [fb_streaming Service](doc/fb_streaming.md).
 
-In addition, there is a special utility `fb_repl_print`, which allows you to view the contents of the specified replication log file, which facilitates debugging of plugins and the replication itself. A detailed description of the `fb_repl_print` utility can be found in the document [fb_repl_print Utility](doc/fb_repl_print_en.md).
+In addition, there is a special utility `fb_repl_print`, which allows you to view the contents of the specified replication log file, which facilitates debugging of plugins and the replication itself. A detailed description of the `fb_repl_print` utility can be found in the document [fb_repl_print Utility](doc/fb_repl_print.md).
 
-To obtain binary files of the `fb_streaming_svc` service and the `fb_repl_print` utility, please contact IBSurgeon.
+To obtain binary files of the `fb_streaming` service and the `fb_repl_print` utility, please contact IBSurgeon.
 
-The process of writing your own plugins is described in detail in the document [Writing Your Own Plugin for the fb_streaming_svc Service](doc/writing_plugin_en.md).
+The process of writing your own plugins is described in detail in the document [Writing Your Own Plugin for the fb_streaming Service](doc/writing_plugin.md).
 
 As an example of a plugin, let's consider a simple library that will translate the original binary replication log files into an equivalent JSON format and save the logs in a specified directory with the same name but with a `.json` extension. Let's call this plugin `SimpleJsonPlugin`.
 

@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Documentation">
+      <UniqueIdentifier>{b000f116-14f7-45ff-b1d9-b5e2a0405e94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="CMAKE">
+      <UniqueIdentifier>{bda94a6d-9e99-424e-83a7-eb2364e97e19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bat Files">
+      <UniqueIdentifier>{c0cd0b53-bf54-4e3d-bedc-1e57848902b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{ba73993b-caba-4d58-bca6-0e24852d0937}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\plugins">
+      <UniqueIdentifier>{ee252757-6da0-4ecd-982f-bfa0c6e9dece}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\plugins\simple_json">
+      <UniqueIdentifier>{b2125d60-0f98-4256-9a61-6b484cbca973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\common">
+      <UniqueIdentifier>{13c0f8c5-9d73-4abc-995f-4f11c3c2b1e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\encoding">
+      <UniqueIdentifier>{318752de-6efd-46dd-a155-567a82437378}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{14b7ebe3-16e8-4847-ae00-c1fbdc5b48fb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\encoding\StringEncodeHelper.cpp">
+      <Filter>Source\encoding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\encoding\StringConverterHelper.cpp">
+      <Filter>Source\encoding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\Utils.cpp">
+      <Filter>Source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\plugins\simple_json\SimpleJsonPlugin.cpp">
+      <Filter>Source\plugins\simple_json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\plugins\simple_json\StreamPlugin.cpp">
+      <Filter>Source\plugins\simple_json</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\doc\simple_json_plugin_ru.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="..\..\doc\simple_json_plugin.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="release_pack-x64.bat">
+      <Filter>Bat Files</Filter>
+    </None>
+    <None Include="release_pack-x86.bat">
+      <Filter>Bat Files</Filter>
+    </None>
+    <None Include="write_build_no.bat">
+      <Filter>Bat Files</Filter>
+    </None>
+    <None Include="fb_streaming.conf">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="vcpkg.json" />
+    <None Include="vcpkg-configuration.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt">
+      <Filter>CMAKE</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="simple_json_plugin.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\plugins\simple_json\SimpleJsonPlugin.h">
+      <Filter>Source\plugins\simple_json</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

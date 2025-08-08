@@ -5,11 +5,12 @@
 
 using namespace Firebird;
 
-extern "C"
+extern "C" {
+
+FB_DLL_EXPORT void fb_stream_plugin(IMaster* master, IStreamPluginManager* pm)
 {
-	FB_DLL_EXPORT void fb_stream_plugin(IMaster* master, IStreamPluginManager* pm)
-	{
-		auto factory = new SimpleJsonPlugin::SimpleJsonPluginFactory(master);
-		pm->registerPluginFactory("simple_json_plugin", factory);
-	}
+    auto factory = new SimpleJsonPlugin::SimpleJsonPluginFactory(master);
+    pm->registerPluginFactory("simple_json_plugin", factory);
 }
+
+} // extern C

@@ -19,23 +19,30 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\common\charsets.h" />
-    <ClInclude Include="..\..\src\common\EncodeUtils.h" />
-    <ClInclude Include="..\..\src\common\FBAutoPtr.h" />
-    <ClInclude Include="..\..\src\common\FBCharsetInfo.h" />
-    <ClInclude Include="..\..\src\common\LazyFactory.h" />
-    <ClInclude Include="..\..\src\common\Utils.h" />
-    <ClInclude Include="..\..\src\include\ReplicateApplierInterface.h" />
     <ClInclude Include="..\..\src\plugins\simple_json\SimpleJsonPlugin.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\common\EncodeUtils.cpp" />
     <ClCompile Include="..\..\src\common\Utils.cpp" />
+    <ClCompile Include="..\..\src\encoding\StringConverterHelper.cpp" />
+    <ClCompile Include="..\..\src\encoding\StringEncodeHelper.cpp" />
     <ClCompile Include="..\..\src\plugins\simple_json\SimpleJsonPlugin.cpp" />
     <ClCompile Include="..\..\src\plugins\simple_json\StreamPlugin.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\README.md" />
+    <None Include="..\..\doc\simple_json_plugin.md" />
+    <None Include="..\..\doc\simple_json_plugin_ru.md" />
+    <None Include="fb_streaming.conf" />
+    <None Include="release_pack-x64.bat" />
+    <None Include="release_pack-x86.bat" />
+    <None Include="vcpkg-configuration.json" />
+    <None Include="vcpkg.json" />
+    <None Include="write_build_no.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="simple_json_plugin.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -90,16 +97,36 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)build\windows-x64\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\windows-$(PlatformTarget)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\windows-$(PlatformTarget)\$(Configuration)\tmp\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)build\windows-x64\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\windows-$(PlatformTarget)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\windows-$(PlatformTarget)\$(Configuration)\tmp\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)build\windows-x86\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\windows-$(PlatformTarget)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\windows-$(PlatformTarget)\$(Configuration)\tmp\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)build\windows-x86\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\windows-$(PlatformTarget)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\windows-$(PlatformTarget)\$(Configuration)\tmp\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgInstalledDir>$(SolutionDir)build\$(ProjectName)\vcpkg_installed\windows-$(PlatformTarget)</VcpkgInstalledDir>
+    <VcpkgUseStatic>false</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <VcpkgInstalledDir>$(SolutionDir)build\$(ProjectName)\vcpkg_installed\windows-$(PlatformTarget)</VcpkgInstalledDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <VcpkgInstalledDir>$(SolutionDir)build\$(ProjectName)\vcpkg_installed\windows-$(PlatformTarget)</VcpkgInstalledDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgInstalledDir>$(SolutionDir)build\$(ProjectName)\vcpkg_installed\windows-$(PlatformTarget)</VcpkgInstalledDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -109,16 +136,20 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>c:\Firebird\4.0\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\Firebird\5.0\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PreBuildEvent>
+      <Command>write_build_no.bat &gt; simple_json_plugin_build_no.h</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -130,10 +161,11 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>c:\Firebird\4.0\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\Firebird\5.0\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -142,6 +174,15 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PreBuildEvent>
+      <Command>write_build_no.bat &gt; simple_json_plugin_build_no.h</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>release_pack-x86.bat "$(SolutionDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Release Pack</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -151,16 +192,20 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>c:\Firebird\4.0\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\Firebird\5.0\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PreBuildEvent>
+      <Command>write_build_no.bat &gt; simple_json_plugin_build_no.h</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -172,10 +217,11 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>c:\Firebird\4.0\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\Firebird\5.0\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -184,6 +230,15 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PreBuildEvent>
+      <Command>write_build_no.bat &gt; simple_json_plugin_build_no.h</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>release_pack-x64.bat "$(SolutionDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Release Pack</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

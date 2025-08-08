@@ -1,3 +1,7 @@
+#pragma once
+#ifndef INTL_CHARSETS_H
+#define INTL_CHARSETS_H
+
 /*
  * The contents of this file are subject to the Interbase Public
  * License Version 1.0 (the "License"); you may not use this file
@@ -19,8 +23,6 @@
 /** Added Jan 23 2003 Blas Rodriguez Somoza
 CS_737, CS_775, CS_858, CS_862, CS_864, CS_866, CS_869
 */
-#ifndef INTL_CHARSETS_H
-#define INTL_CHARSETS_H
 
 #define DEFAULT_ATTACHMENT_CHARSET	CS_NONE
 
