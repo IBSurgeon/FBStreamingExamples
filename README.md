@@ -67,88 +67,96 @@ Example of a `.json` file content:
 
 ```json
 {
+    "header": {
+        "version": 1,
+        "guid": "{F396449D-F6E4-4812-875E-248AB7C2BEE7}",
+        "sequence": 1,
+        "state": "archive"
+    },
     "events": [
         {
             "event": "START TRANSACTION",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
-            "changedFields": [
-                "SHORTNAME_EN"
-            ],
             "event": "UPDATE",
+            "table": "CUSTOMER",
+            "tnx": 1937,
+            "changedFields": [
+                "ADDRESS"
+            ],
             "oldRecord": {
-                "CODE_COLOR": 3,
-                "CODE_SENDER": 1,
-                "NAME": "красно-серая",
-                "NAME_DE": "",
-                "NAME_EN": "red grey",
-                "SHORTNAME": "кр.-сер.",
-                "SHORTNAME_EN": ""
+                "CUSTOMER_ID": 8,
+                "NAME": "Abigail Thomas",
+                "ADDRESS": null,
+                "ZIPCODE": null,
+                "PHONE": "1-290-853-7531"
             },
             "record": {
-                "CODE_COLOR": 3,
-                "CODE_SENDER": 1,
-                "NAME": "красно-серая",
-                "NAME_DE": "",
-                "NAME_EN": "red grey",
-                "SHORTNAME": "кр.-сер.",
-                "SHORTNAME_EN": "fff"
-            },
-            "table": "COLOR",
-            "tnx": 6259
+                "CUSTOMER_ID": 8,
+                "NAME": "Abigail Thomas",
+                "ADDRESS": "555",
+                "ZIPCODE": null,
+                "PHONE": "1-290-853-7531"
+            }
         },
         {
             "event": "RELEASE SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "RELEASE SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "COMMIT",
-            "tnx": 6259
+            "tnx": 1937
         }
-    ],
-    "header": {
-        "guid": "{AA08CB53-C875-4CA3-B513-877D0668885D}",
-        "sequence": 3,
-        "state": "archive",
-        "version": 1
-    }
+    ]
 }
 ```
-### SimpleJsonPlugin Configuration
+
+### Database for examples
+
+For the examples we will use the database with ODS 13.0 (Firebird 4.0) or ODS 13.1 (Firebird 5.0), which you can download from the following links:
+
+* [example-db_4_0](https://github.com/sim1984/example-db_4_0)
+* [example-db_5_0](https://github.com/sim1984/example-db_5_0)
+
+### Setting up the `fb_streaming` service and the `simple_json_plugin` plugin
+
+First of all, download the `simple_json_plugin` plugin and place `simple_json_plugin.dll` in the `$(fb_streaming_root)/stream_plugins` directory, where `$(fb_streaming_root)` is the root directory of the `fb_streaming` service installation.
+
+Next, set up the `fb_streaming.conf` configuration so that `fb_streaming` automatically publishes changes to json files.
 
 Example of plugin configuration:
 
 ```conf
-task = d:\fbdata\4.0\replication\testdb\archive
+task = d:\fbdata\4.0\replication\examples\json_source
 {
-    deleteProcessedFile = true
-    database = inet://localhost:3054/test
-    username = SYSDBA
-    password = masterkey
-    plugin = simple_json_plugin
-    dumpBlobs = true
-    register_ddl_events = true
-    register_sequence_events = true
-    outputDir = d:\fbdata\4.0\replication\testdb\json_archive
-    # include_tables = 
-    # exclude_tables = 
+	deleteProcessedFile = true
+	database = inet://localhost:3054/examples
+	username = SYSDBA
+	password = masterkey
+	plugin = simple_json_plugin
+	dumpBlobs = true
+	register_ddl_events = true
+	register_sequence_events = true
+	outputDir = d:\fbdata\4.0\replication\examples\json_archive
+	# include_tables = 
+	# exclude_tables = 
 }
 ```
 
-Parameter descriptions:
+The `task` parameter describes the task to be performed by the `fb_streaming` service. It specifies the folder where the replication segment files are located for processing by the plugin. There may be several such tasks. This parameter is complex and itself describes the configuration of a specific task. Let's describe the parameters available for the task performed by the `simple_json_plugin` plugin:
 
 * `controlFileDir` - the directory where the control file will be created (by default, the same directory as `sourceDir`);
 * `database` - database connection string (mandatory);
