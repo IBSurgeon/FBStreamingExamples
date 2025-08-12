@@ -68,64 +68,60 @@ Firebird streaming - это технология асинхронной публ
 
 ```json
 {
+    "header": {
+        "version": 1,
+        "guid": "{F396449D-F6E4-4812-875E-248AB7C2BEE7}",
+        "sequence": 1,
+        "state": "archive"
+    },
     "events": [
         {
             "event": "START TRANSACTION",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
-            "changedFields": [
-                "SHORTNAME_EN"
-            ],
             "event": "UPDATE",
+            "table": "CUSTOMER",
+            "tnx": 1937,
+            "changedFields": [
+                "ADDRESS"
+            ],
             "oldRecord": {
-                "CODE_COLOR": 3,
-                "CODE_SENDER": 1,
-                "NAME": "красно-серая",
-                "NAME_DE": "",
-                "NAME_EN": "red grey",
-                "SHORTNAME": "кр.-сер.",
-                "SHORTNAME_EN": ""
+                "CUSTOMER_ID": 8,
+                "NAME": "Abigail Thomas",
+                "ADDRESS": null,
+                "ZIPCODE": null,
+                "PHONE": "1-290-853-7531"
             },
             "record": {
-                "CODE_COLOR": 3,
-                "CODE_SENDER": 1,
-                "NAME": "красно-серая",
-                "NAME_DE": "",
-                "NAME_EN": "red grey",
-                "SHORTNAME": "кр.-сер.",
-                "SHORTNAME_EN": "fff"
-            },
-            "table": "COLOR",
-            "tnx": 6259
+                "CUSTOMER_ID": 8,
+                "NAME": "Abigail Thomas",
+                "ADDRESS": "555",
+                "ZIPCODE": null,
+                "PHONE": "1-290-853-7531"
+            }
         },
         {
             "event": "RELEASE SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "RELEASE SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "COMMIT",
-            "tnx": 6259
+            "tnx": 1937
         }
-    ],
-    "header": {
-        "guid": "{AA08CB53-C875-4CA3-B513-877D0668885D}",
-        "sequence": 3,
-        "state": "archive",
-        "version": 1
-    }
+    ]
 }
 ```
 
@@ -166,7 +162,7 @@ database = d:\fbdata\4.0\examples.fdb
 Если журналы репликации не используются для самой репликации, а только необходимы для fb_streaming, то конфигурацию можно упростить:
 
 ```conf
-database = d:\fbdata\5.0\examples.fdb
+database = d:\fbdata\4.0\examples.fdb
 {
    journal_directory = d:\fbdata\4.0\replication\examples\journal
    journal_archive_directory = d:\fbdata\4.0\replication\examples\json_source
@@ -174,10 +170,10 @@ database = d:\fbdata\5.0\examples.fdb
 }
 ```
 
-Теперь надо включить необходимые таблицы в публикацию. Для примера выше достаточно добавить в публикацию таблицу `CUSTOMERS`. Это делается следующим запросом:
+Теперь надо включить необходимые таблицы в публикацию. Для примера выше достаточно добавить в публикацию таблицу `CUSTOMER`. Это делается следующим запросом:
 
 ```sql
-ALTER DATABASE INCLUDE CUSTOMERS TO PUBLICATION;
+ALTER DATABASE INCLUDE CUSTOMER TO PUBLICATION;
 ```
 
 или можно включить в публикацию сразу все таблицы базы данных:
@@ -211,7 +207,7 @@ task = d:\fbdata\4.0\replication\examples\json_source
 }
 ```
 
-Описание параметров:
+Параметр `task` описывает задачу для выполнения службой `fb_streaming`. Он указывает папку, в которой расположены файлы сегментов репликации для их обработки плагином. Таких задач может быть несколько. Этот параметр является сложным и сам описывает конфигурацию конкретной задачи. Опишем параметры доступные для задачи выполняемой плагином `simple_json_plugin`:
 
 - `controlFileDir` - директория в которой будет создан контрольный файл (по умолчанию та же директория, что и `sourceDir`);
 * `database` - строка подключения к базе данных (обязательный);
@@ -225,4 +221,37 @@ task = d:\fbdata\4.0\replication\examples\json_source
 * `register_sequence_events` - регистрировать ли события установки значения последовательности (по умолчанию true);
 * `include_tables` - регулярное выражение, определяющие имена таблиц для которых необходимо отслеживать события;
 * `exclude_tables` - регулярное выражение, определяющие имена таблиц для которых не надо отслеживать события.
+
+### Установка и старт службы `fb_streaming`
+
+Следующим шагом необходимо установить и запустить службу `fb_streaming`.
+
+В Windows это делается следующими командами (необходимы права Администратора):
+
+```bash
+fb_streaming install
+fb_streaming start
+```
+
+В Linux:
+
+```bash
+sudo systemctl enable fb_streaming
+
+sudo systemctl start fb_streaming
+```
+
+> [!NOTE]
+> Для тестирования работы `fb_streaming` без установки службы просто наберите команду `fb_streaming` без аргументов.
+> `fb_streaming` будет запущен как приложение и завершён после нажатия клавиши Enter.
+
+### Старт публикации в базе данных
+
+После того, как вы всё настроили и запустили, необходимо разрешить публикацию в вашей базе данных. Это делается следующим SQL запросом:
+
+```sql
+ALTER DATABASE ENABLE PUBLICATION;
+```
+
+С этого момента служба `fb_streaming` будет отслеживать изменения в указанных таблицах и публиковать изменения в json файлах, которые будут распологаться в директории, указанной в апаремтре `outputDir`.
 
