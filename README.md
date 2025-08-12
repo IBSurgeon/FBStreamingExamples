@@ -128,8 +128,59 @@ Example of a `.json` file content:
 
 For the examples we will use the database with ODS 13.0 (Firebird 4.0) or ODS 13.1 (Firebird 5.0), which you can download from the following links:
 
-* [example-db_4_0](https://github.com/sim1984/example-db_4_0)
-* [example-db_5_0](https://github.com/sim1984/example-db_5_0)
+* [example-db_4_0](https://github.com/IBSurgeon/example-db_4_0)
+* [example-db_5_0](https://github.com/IBSurgeon/example-db_5_0)
+
+### Setting up Firebird and preparing the database
+
+For convenience, I create a database alias in the `databases.conf` configuration file:
+
+```conf
+examples = d:\fbdata\4.0\examples.fdb
+{
+   DefaultDbCachePages = 32K
+   TempCacheLimit = 512M
+}
+```
+
+Now you need to set up asynchronous replication for your database, to do this you need to add the following lines to the `replication.conf` file:
+
+```conf
+database = d:\fbdata\4.0\examples.fdb
+{
+   journal_directory = d:\fbdata\4.0\replication\examples\journal
+   journal_archive_directory = d:\fbdata\4.0\replication\examples\archive
+   journal_archive_command = "copy $(pathname) $(archivepathname) && copy $(pathname) d:\fbdata\4.0\replication\examples\json_source"
+   journal_archive_timeout = 10
+}
+```
+
+Note that there is a duplication of log archive files here so that logical replication and the task for publishing events in JSON format can work simultaneously.
+
+This is necessary because the log archive files are deleted after processing and cannot be used by another task.
+
+If the replication logs are not used for replication itself, but only needed for `fb_streaming`, then the configuration can be simplified:
+
+```conf
+database = d:\fbdata\4.0\examples.fdb
+{
+   journal_directory = d:\fbdata\4.0\replication\examples\journal
+   journal_archive_directory = d:\fbdata\4.0\replication\examples\json_source
+   journal_archive_timeout = 10
+}
+```
+
+Now you need to include the necessary tables in the publication. For the example above, it is enough to add the `CUSTOMER` table to the publication. This is done with the following query:
+
+```sql
+ALTER DATABASE INCLUDE CUSTOMER TO PUBLICATION;
+```
+
+or you can include all database tables in the publication at once:
+
+```sql
+ALTER DATABASE INCLUDE ALL TO PUBLICATION;
+```
 
 ### Setting up the `fb_streaming` service and the `simple_json_plugin` plugin
 
@@ -170,3 +221,36 @@ The `task` parameter describes the task to be performed by the `fb_streaming` se
 * `register_sequence_events` - whether to register sequence value setting events (default true);
 * `include_tables` - regular expression defining the names of tables for which events should be tracked;
 * `exclude_tables` - regular expression defining the names of tables for which events should not be tracked.
+
+### Installing and starting the `fb_streaming` service
+
+The next step is to install and start the `fb_streaming` service.
+
+In Windows, this is done with the following commands (Administrator privileges are required):
+
+```bash
+fb_streaming install
+fb_streaming start
+```
+
+On Linux:
+
+```bash
+sudo systemctl enable fb_streaming
+
+sudo systemctl start fb_streaming
+```
+
+> [!NOTE]
+> To test how `fb_streaming` works without installing the service, simply type the `fb_streaming` command without any arguments.
+> `fb_streaming` will be launched as an application and terminated after pressing Enter.
+
+### Start publication in the database
+
+Once you have everything set up and running, you need to enable publishing to your database. This is done with the following SQL query:
+
+```sql
+ALTER DATABASE ENABLE PUBLICATION;
+```
+
+From now on, the `fb_streaming` service will monitor changes in the specified tables and publish changes in json files, which will be located in the directory specified in the `outputDir` parameter.

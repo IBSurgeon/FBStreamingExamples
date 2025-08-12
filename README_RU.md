@@ -129,8 +129,8 @@ Firebird streaming - это технология асинхронной публ
 
 Для примеров мы будем использовать базу данных c ODS 13.0 (Firebird 4.0) или ODS 13.1 (Firebird 5.0), которые вы можете скачать по следующим ссылкам:
 
-* [example-db_4_0](https://github.com/sim1984/example-db_4_0)
-* [example-db_5_0](https://github.com/sim1984/example-db_5_0)
+* [example-db_4_0](https://github.com/IBSurgeon/example-db_4_0)
+* [example-db_5_0](https://github.com/IBSurgeon/example-db_5_0)
 
 ### Настройка Firebird и подготовка базы данных
 
@@ -254,4 +254,3 @@ ALTER DATABASE ENABLE PUBLICATION;
 ```
 
 С этого момента служба `fb_streaming` будет отслеживать изменения в указанных таблицах и публиковать изменения в json файлах, которые будут распологаться в директории, указанной в апаремтре `outputDir`.
-
