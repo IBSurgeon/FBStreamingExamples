@@ -12,7 +12,7 @@ Firebird streaming - это технология асинхронной публ
 
 Процесс написание собственных плагинов подробно описан в документе [Написание собственного плагина для службы fb_streaming](doc/writing_plugin_ru.md).
 
-В качестве примера плагина рассмотрим простую библиотеку, которая будет переводить исходные бинарные файлы журнала репликации в эквивалентный JSON формат и сохранять журналы в заданную директорию с тем же именем, но с расширением `.json`. Назовём данный плагин `SimpleJsonPlugin`.
+В качестве примера плагина рассмотрим простую библиотеку, которая будет переводить исходные бинарные файлы журнала репликации в эквивалентный JSON формат и сохранять журналы в заданную директорию с тем же именем, но с расширением `.json`. Назовём данный плагин `simple_json_plugin`.
 
 Скачать скомпилированный пример с конфигурацией можно по ссылкам:
 
@@ -20,9 +20,9 @@ Firebird streaming - это технология асинхронной публ
 * [SimpleJsonPlugin_Win_x86.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.5/simple_json_plugin-1.5.3-Win-x86.zip)
 
 
-## Описание плагина SimpleJsonPlugin
+## Описание плагина simple_json_plugin
 
-Плагин `SimpleJsonPlugin` предназначен для автоматической трансляции бинарных файлов журнала репликации в эквивалентный JSON формат 
+Плагин `simple_json_plugin` предназначен для автоматической трансляции бинарных файлов журнала репликации в эквивалентный JSON формат 
 и сохранять журналы в заданную директорию с тем же именем, но с расширением `.json`.
 
 Каждый json файл содержит в себе корневой объект, состоящий из двух полей: `header` и `events`.
@@ -129,18 +129,79 @@ Firebird streaming - это технология асинхронной публ
 }
 ```
 
-### Настройка плагина SimpleJsonPlugin
+### База данных для примеров
+
+Для примеров мы будем использовать базу данных c ODS 13.0 (Firebird 4.0) или ODS 13.1 (Firebird 5.0), которые вы можете скачать по следующим ссылкам:
+
+* [example-db_4_0](https://github.com/sim1984/example-db_4_0)
+* [example-db_5_0](https://github.com/sim1984/example-db_5_0)
+
+### Настройка Firebird и подготовка базы данных
+
+Для удобства я создаю псевдоним базы данных в файле конфигурации `databases.conf`:
+
+```conf
+examples = d:\fbdata\4.0\examples.fdb
+{
+   DefaultDbCachePages = 32K
+   TempCacheLimit = 512M
+}
+```
+
+Теперь необходимо настроить асинхронную репликацию для вашей базы данных, для этого в файле `replication.conf` необходимо добавить следующие строчки:
+
+```conf
+database = d:\fbdata\4.0\examples.fdb
+{
+   journal_directory = d:\fbdata\4.0\replication\examples\journal
+   journal_archive_directory = d:\fbdata\4.0\replication\examples\archive
+   journal_archive_command = "copy $(pathname) $(archivepathname) && copy $(pathname) d:\fbdata\4.0\replication\examples\json_source"
+   journal_archive_timeout = 10
+}
+```
+
+Обратите внимание: здесь происходит дублирование файлов архивов журналов, чтобы одновременно работала логическая репликация и задача по отправки событий в Kafka.
+Это необходимо, поскольку файлы с архивами журналов удаляются после обработки и не могут быть использованы другой задаче.
+
+Если журналы репликации не используются для самой репликации, а только необходимы для fb_streaming, то конфигурацию можно упростить:
+
+```conf
+database = d:\fbdata\5.0\examples.fdb
+{
+   journal_directory = d:\fbdata\4.0\replication\examples\journal
+   journal_archive_directory = d:\fbdata\4.0\replication\examples\json_source
+   journal_archive_timeout = 10
+}
+```
+
+Теперь надо включить необходимые таблицы в публикацию. Для примера выше достаточно добавить в публикацию таблицу `CUSTOMERS`. Это делается следующим запросом:
+
+```sql
+ALTER DATABASE INCLUDE CUSTOMERS TO PUBLICATION;
+```
+
+или можно включить в публикацию сразу все таблицы базы данных:
+
+```sql
+ALTER DATABASE INCLUDE ALL TO PUBLICATION;
+```
+
+### Настройка службы `fb_streaming` и плагина `simple_json_plugin`
+
+Прежде всего скачиваем плагин `simple_json_plugin` и размещаем `simple_json_plugin.dll` в дирекотрии `$(fb_streaming_root)/stream_plugins`, где `$(fb_streaming_root)` - корневая директория установки службы `fb_streaming`.
+
+Далее настроим конфигурацию `fb_streaming.conf` для того, чтобы `fb_streaming` автоматически публиковал изменения в json файлы.
 
 Пример настройки плагина:
 
 ```conf
-task = d:\fbdata\4.0\replication\testdb\archive
+task = d:\fbdata\4.0\replication\examples\json_source
 {
 	deleteProcessedFile = true
 	database = inet://localhost:3054/test
 	username = SYSDBA
 	password = masterkey
-	plugin = SimpleJsonPlugin
+	plugin = simple_json_plugin
 	dumpBlobs = true
 	register_ddl_events = true
 	register_sequence_events = true
@@ -152,7 +213,7 @@ task = d:\fbdata\4.0\replication\testdb\archive
 
 Описание параметров:
 
-* `lockDir` - директория в которой будет создан файл блокировок (по умолчанию та же директория, что и `archiveDir`);
+- `controlFileDir` - директория в которой будет создан контрольный файл (по умолчанию та же директория, что и `sourceDir`);
 * `database` - строка подключения к базе данных (обязательный);
 * `username` - имя пользователя для подключения к базе данных;
 * `password` - пароль для подключения к базе данных;

@@ -12,16 +12,16 @@ To obtain binary files of the `fb_streaming` service and the `fb_repl_print` uti
 
 The process of writing your own plugins is described in detail in the document [Writing Your Own Plugin for the fb_streaming Service](doc/writing_plugin.md).
 
-As an example of a plugin, let's consider a simple library that will translate the original binary replication log files into an equivalent JSON format and save the logs in a specified directory with the same name but with a `.json` extension. Let's call this plugin `SimpleJsonPlugin`.
+As an example of a plugin, let's consider a simple library that will translate the original binary replication log files into an equivalent JSON format and save the logs in a specified directory with the same name but with a `.json` extension. Let's call this plugin `simple_json_plugin`.
 
 You can download the compiled example with configuration from the links:
 
 * [SimpleJsonPlugin_Win_x64.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.5/simple_json_plugin-1.5.3-Win-x64.zip)
 * [SimpleJsonPlugin_Win_x86.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.5/simple_json_plugin-1.5.3-Win-x86.zip)
 
-## Description of the SimpleJsonPlugin
+## Description of the simple_json_plugin
 
-The `SimpleJsonPlugin` is designed for the automatic translation of binary replication log files into an equivalent JSON format 
+The `simple_json_plugin` is designed for the automatic translation of binary replication log files into an equivalent JSON format 
 and to save the logs in a specified directory with the same name but with a `.json` extension.
 
 Each JSON file contains a root object consisting of two fields: `header` and `events`.
@@ -138,7 +138,7 @@ task = d:\fbdata\4.0\replication\testdb\archive
     database = inet://localhost:3054/test
     username = SYSDBA
     password = masterkey
-    plugin = SimpleJsonPlugin
+    plugin = simple_json_plugin
     dumpBlobs = true
     register_ddl_events = true
     register_sequence_events = true
@@ -150,7 +150,7 @@ task = d:\fbdata\4.0\replication\testdb\archive
 
 Parameter descriptions:
 
-* `lockDir` - the directory where the lock file will be created (by default, the same directory as `archiveDir`);
+* `controlFileDir` - the directory where the control file will be created (by default, the same directory as `sourceDir`);
 * `database` - database connection string (mandatory);
 * `username` - username for database connection;
 * `password` - password for database connection;
