@@ -198,14 +198,14 @@ ALTER DATABASE INCLUDE ALL TO PUBLICATION;
 task = d:\fbdata\4.0\replication\examples\json_source
 {
 	deleteProcessedFile = true
-	database = inet://localhost:3054/test
+	database = inet://localhost:3054/examples
 	username = SYSDBA
 	password = masterkey
 	plugin = simple_json_plugin
 	dumpBlobs = true
 	register_ddl_events = true
 	register_sequence_events = true
-	outputDir = d:\fbdata\4.0\replication\testdb\json_archive
+	outputDir = d:\fbdata\4.0\replication\examples\json_archive
 	# include_tables = 
 	# exclude_tables = 
 }
