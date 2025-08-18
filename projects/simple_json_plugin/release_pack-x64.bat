@@ -1,5 +1,5 @@
 set PROJECT_NAME=simple_json_plugin
-set VERSION=1.5.3
+set VERSION=1.6.0
 set ARCH=Win-x64
 set ARCHIVATOR_DIR=C:\Program Files\7-Zip
 set WORK_DIR=%1

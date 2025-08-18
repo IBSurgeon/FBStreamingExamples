@@ -124,7 +124,7 @@ sudo systemctl disable fb_streaming
 ```
 # logLevel = info
 
-# pluginDir = $(root)/stream_plugins 
+# pluginDir = $(root)/stream_plugins
 
 task = <sourceDir_1>
 {
@@ -208,7 +208,7 @@ journal_archive_command = "copy $(pathname) $(archivepathname) && copy $(pathnam
 Поле `events` представляет собой массив объектов, каждый из которых представляет одно из событий репликации.
 Объект события может содержать следующие поля:
 
-- `event` - тип события. Доступны следующие варианты:  
+- `event` - тип события. Доступны следующие варианты:
   - `SET SEQUENCE` - установка значения последовательности (генератора);
   - `START TRANSACTION` - старт транзакции;
   - `PREPARE TRANSACTION` - выполнение первой фазы подтверждения двухфазной транзакции;
@@ -239,64 +239,60 @@ journal_archive_command = "copy $(pathname) $(archivepathname) && copy $(pathnam
 
 ```json
 {
+    "header": {
+        "version": 1,
+        "guid": "{F396449D-F6E4-4812-875E-248AB7C2BEE7}",
+        "sequence": 1,
+        "state": "archive"
+    },
     "events": [
         {
             "event": "START TRANSACTION",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
-            "changedFields": [
-                "SHORTNAME_EN"
-            ],
             "event": "UPDATE",
+            "table": "CUSTOMER",
+            "tnx": 1937,
+            "changedFields": [
+                "ADDRESS"
+            ],
             "oldRecord": {
-                "CODE_COLOR": 3,
-                "CODE_SENDER": 1,
-                "NAME": "красно-серая",
-                "NAME_DE": "",
-                "NAME_EN": "red grey",
-                "SHORTNAME": "кр.-сер.",
-                "SHORTNAME_EN": ""
+                "CUSTOMER_ID": 8,
+                "NAME": "Abigail Thomas",
+                "ADDRESS": null,
+                "ZIPCODE": null,
+                "PHONE": "1-290-853-7531"
             },
             "record": {
-                "CODE_COLOR": 3,
-                "CODE_SENDER": 1,
-                "NAME": "красно-серая",
-                "NAME_DE": "",
-                "NAME_EN": "red grey",
-                "SHORTNAME": "кр.-сер.",
-                "SHORTNAME_EN": "fff"
-            },
-            "table": "COLOR",
-            "tnx": 6259
+                "CUSTOMER_ID": 8,
+                "NAME": "Abigail Thomas",
+                "ADDRESS": "555",
+                "ZIPCODE": null,
+                "PHONE": "1-290-853-7531"
+            }
         },
         {
             "event": "RELEASE SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "RELEASE SAVEPOINT",
-            "tnx": 6259
+            "tnx": 1937
         },
         {
             "event": "COMMIT",
-            "tnx": 6259
+            "tnx": 1937
         }
-    ],
-    "header": {
-        "guid": "{AA08CB53-C875-4CA3-B513-877D0668885D}",
-        "sequence": 3,
-        "state": "archive",
-        "version": 1
-    }
+    ]
 }
 ```
 
@@ -304,20 +300,20 @@ journal_archive_command = "copy $(pathname) $(archivepathname) && copy $(pathnam
 
 Пример настройки плагина:
 
-```conf
-task = d:\fbdata\4.0\replication\testdb\archive
+```
+task = d:\fbdata\4.0\replication\examples\json_source
 {
     deleteProcessedFile = true
-    database = inet://localhost:3054/test
+    database = inet://localhost:3054/examples
     username = SYSDBA
     password = masterkey
     plugin = simple_json_plugin
     dumpBlobs = true
     register_ddl_events = true
     register_sequence_events = true
-    outputDir = d:\fbdata\4.0\replication\testdb\json_archive
-    # include_tables = 
-    # exclude_tables = 
+    outputDir = d:\fbdata\4.0\replication\examples\json_archive
+    # include_tables =
+    # exclude_tables =
 }
 ```
 

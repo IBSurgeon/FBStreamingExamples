@@ -91,6 +91,29 @@ namespace FbUtils
         return (end == std::wstring::npos) ? L"" : s.substr(0, end + 1);
     }
 
+    std::string_view sv_rtrim(std::string_view str) noexcept
+    {
+        if (auto pos = str.find_last_not_of(WHITESPACE); pos != std::string::npos) {
+            str.remove_suffix(str.length() - pos - 1);
+        }
+        return str;
+    }
+
+    std::string_view sv_ltrim(std::string_view str) noexcept
+    {
+        if (auto pos = str.find_first_not_of(WHITESPACE); pos != std::string::npos) {
+            str.remove_prefix(pos);
+        }
+        return str;
+    }
+
+    std::string_view sv_trim(std::string_view str) noexcept
+    {
+        str = sv_ltrim(str);
+        str = sv_rtrim(str);
+        return str;
+    }
+
     string replace_first(const string& str, string_view what, string_view replacement)
     {
         string s(str);

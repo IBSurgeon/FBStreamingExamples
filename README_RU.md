@@ -16,8 +16,8 @@ Firebird streaming - это технология асинхронной публ
 
 Скачать скомпилированный пример с конфигурацией можно по ссылкам:
 
-* [SimpleJsonPlugin_Win_x64.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.5/simple_json_plugin-1.5.3-Win-x64.zip)
-* [SimpleJsonPlugin_Win_x86.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.5/simple_json_plugin-1.5.3-Win-x86.zip)
+* [SimpleJsonPlugin_Win_x64.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.6/simple_json_plugin-1.6.0-Win-x64.zip)
+* [SimpleJsonPlugin_Win_x86.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.6/simple_json_plugin-1.6.0-Win-x86.zip)
 
 
 ## Описание плагина simple_json_plugin

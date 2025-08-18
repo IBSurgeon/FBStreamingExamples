@@ -42,8 +42,8 @@ namespace MyPlugin {
         void finish(Firebird::ThrowStatusWrapper* status) override;
         void startSegment(Firebird::ThrowStatusWrapper* status, SegmentHeaderInfo* segmentHeader) override;
         void finishSegment(Firebird::ThrowStatusWrapper* status) override;
-        void startBlock(Firebird::ThrowStatusWrapper* status, unsigned blockOffset) override;
-        void setSegmentOffset(unsigned offset) override;
+        void startBlock(ThrowStatusWrapper* status, ISC_UINT64 blockOffset, unsigned blockLength) override;
+        void setSegmentOffset(ISC_UINT64 offset) override;
         Firebird::IStreamedTransaction* startTransaction(Firebird::ThrowStatusWrapper* status, ISC_INT64 number) override;
         void setSequence(Firebird::ThrowStatusWrapper* status, const char* name, ISC_INT64 value) override;
         FB_BOOLEAN matchTable(Firebird::ThrowStatusWrapper* status, const char* relationName) override;
@@ -199,7 +199,7 @@ void finishSegment(Status* status)
 ### Функция `startBlock`
 
 ```cpp
-void startBlock(ThrowStatusWrapper* status, unsigned blockOffset) override;
+void startBlock(ThrowStatusWrapper* status, ISC_UINT64 blockOffset, unsigned blockLength) override;
 ```
 
 Функция `startBlock` предназначена для обработки события начала блока в файле сегмента репликации. Обычно события в файл не по одному, а целыми блоками. Если транзакция достаточно короткая, то начало и конец блока совпадают с началом и завершением транзакции. В ваших плагинах вы скорее всего сделаете этот метод заглушкой. Он используется в приложении `fb_repl_print` для вывода на печать информации о начале блока.
@@ -207,7 +207,7 @@ void startBlock(ThrowStatusWrapper* status, unsigned blockOffset) override;
 ### Функция `setSegmentOffset`
 
 ```cpp
-void setSegmentOffset(unsigned offset) override;
+void setSegmentOffset(ISC_UINT64 offset) override;
 ```
 
 Сохраняет смещение (в байтах) из файла сегмента репликации. В большинстве плагинов данный метод является просто заглушкой. Однако он используется в приложении `fb_repl_print`, чтобы указать смещение для каждого события при печати.

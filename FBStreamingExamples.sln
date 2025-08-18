@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 		README_RUS.md = README_RUS.md
+		doc\writing_plugin.md = doc\writing_plugin.md
 		doc\writing_plugin_ru.md = doc\writing_plugin_ru.md
 	EndProjectSection
 EndProject

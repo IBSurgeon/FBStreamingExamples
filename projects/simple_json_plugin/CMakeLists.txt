@@ -1,14 +1,17 @@
 cmake_minimum_required (VERSION 3.15)
 
-project (simple_json_plugin VERSION 1.5.3 DESCRIPTION "Firebird streaming Simple JSON plugin" LANGUAGES CXX)
+project (simple_json_plugin 
+    VERSION 1.6.0 
+    DESCRIPTION "Firebird streaming Simple JSON plugin" 
+    LANGUAGES CXX
+    HOMEPAGE_URL "https://www.ibsurgeon.com"
+)
 
 # set variable for the C preprocessor to detect the operation system
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    add_compile_definitions(LINUX)
 	set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build/simple_json_plugin/linux-x64)
 endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    add_compile_definitions(_WINDOWS)
 	if (CMAKE_CXX_COMPILER_ARCHITECTURE_ID STREQUAL "x64")
 	    set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build/simple_json_plugin/windows-x64)
 	endif()
@@ -28,10 +31,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 message(STATUS "${PROJECT_NAME} C++ standard: C++${CMAKE_CXX_STANDARD}")
 message(STATUS "${PROJECT_NAME} C++ compiler: ${CMAKE_CXX_COMPILER_ID}")
 
-add_compile_definitions(HAVE_CONFIG_H)
-
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
-    add_compile_definitions(LINUX)
   	# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
 	include(CheckCXXCompilerFlag)
@@ -76,18 +76,24 @@ file(GLOB_RECURSE PROJECT_SOURCES
 	"../../src/encoding/*"
     "../../src/plugins/simple_json/*")
 
+find_package(nlohmann_json CONFIG REQUIRED)
+
 add_library(${PROJECT_NAME} SHARED ${PROJECT_SOURCES})
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_CONFIG_H)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE LINUX)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _WINDOWS)
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${FIREBIRD_INCLUDE_DIR})
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    find_package(nlohmann_json CONFIG REQUIRED)
-endif()
-
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++fs)
-    target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 endif()
 
 set(STREAMING_DIR /opt/fb_streaming)

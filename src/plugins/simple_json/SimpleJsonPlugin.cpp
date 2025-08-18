@@ -49,8 +49,8 @@ public:
     void finish(ThrowStatusWrapper* status) override;
     void startSegment(ThrowStatusWrapper* status, SegmentHeaderInfo* segmentHeader) override;
     void finishSegment(ThrowStatusWrapper* status) override;
-    void startBlock(ThrowStatusWrapper* status, unsigned blockOffset) override;
-    void setSegmentOffset(unsigned offset) override;
+    void startBlock(ThrowStatusWrapper* status, ISC_UINT64 blockOffset, unsigned blockLength) override;
+    void setSegmentOffset(ISC_UINT64 offset) override;
     IStreamedTransaction* startTransaction(ThrowStatusWrapper* status, ISC_INT64 number) override;
     void setSequence(ThrowStatusWrapper* status, const char* name, ISC_INT64 value) override;
     FB_BOOLEAN matchTable(ThrowStatusWrapper* status, const char* relationName) override;
@@ -59,7 +59,7 @@ public:
     void cleanupTransactions(ThrowStatusWrapper* status) override;
     void log(unsigned level, const char* message) override;
 
-    std::string toUtf8(ThrowStatusWrapper* status, unsigned charsetId, const std::string& s);
+    std::string toUtf8(ThrowStatusWrapper* status, unsigned charsetId, std::string_view s);
 
     IUtil* getUtil() { return m_util; };
 
@@ -146,7 +146,6 @@ void dumpRecord(ThrowStatusWrapper* status, SimpleJsonPlugin::SimpleJsonStreamPl
         // auto fieldSubType = field->getSubType();
         auto fieldCharsetId = field->getCharSet();
         std::string fieldName(field->getName());
-        fieldName = FbUtils::rtrim(fieldName);
         auto fieldScale = static_cast<short>(field->getScale());
         auto fieldLength = field->getLength();
         auto fieldData = field->getData();
@@ -160,12 +159,14 @@ void dumpRecord(ThrowStatusWrapper* status, SimpleJsonPlugin::SimpleJsonStreamPl
                     jRecord[fieldName] = val;
                 } else {
                     const auto text = reinterpret_cast<const char*>(fieldData);
-                    const std::string s(text, fieldLength);
+                    std::string_view s(text, fieldLength);
+                    s = FbUtils::sv_rtrim_char(s, ' ');
+
                     if ((fieldCharsetId == CS_UTF8) || (fieldCharsetId == CS_NONE)) {
-                        jRecord[fieldName] = FbUtils::rtrim(s);
+                        jRecord[fieldName] = s;
                     } else {
                         // character conversion required
-                        const auto utf8Str = FbUtils::rtrim(applier->toUtf8(status, fieldCharsetId, s));
+                        const auto utf8Str = applier->toUtf8(status, fieldCharsetId, s);
                         jRecord[fieldName] = utf8Str;
                     }
                 }
@@ -178,7 +179,7 @@ void dumpRecord(ThrowStatusWrapper* status, SimpleJsonPlugin::SimpleJsonStreamPl
                     const auto val = FbUtils::binary_to_hex(reinterpret_cast<const unsigned char*>(fieldData) + 2, varchar->vary_length);
                     jRecord[fieldName] = val;
                 } else {
-                    const std::string s(varchar->vary_string, varchar->vary_length);
+                    std::string_view s(varchar->vary_string, varchar->vary_length);
                     if ((fieldCharsetId == CS_UTF8) || (fieldCharsetId == CS_NONE)) {
                         jRecord[fieldName] = s;
                     } else {
@@ -222,10 +223,10 @@ void dumpRecord(ThrowStatusWrapper* status, SimpleJsonPlugin::SimpleJsonStreamPl
             case SQL_INT128: {
                 auto value = reinterpret_cast<const FB_I128*>(fieldData);
                 const auto iInt128 = applier->getUtil()->getInt128(status);
-                char buffer[IInt128::STRING_SIZE];
+                char buffer[IInt128::STRING_SIZE] = { ' ' };
                 iInt128->toString(status, value, fieldScale, IInt128::STRING_SIZE, buffer);
-                std::string s(buffer);
-                const auto val = FbUtils::rtrim(s);
+                std::string_view s(buffer);
+                const auto val = FbUtils::sv_rtrim_char(s, ' ');
                 jRecord[fieldName] = val;
                 break;
             }
@@ -243,8 +244,8 @@ void dumpRecord(ThrowStatusWrapper* status, SimpleJsonPlugin::SimpleJsonStreamPl
             }
             case SQL_TIMESTAMP: {
                 const auto value = *reinterpret_cast<const ISC_TIMESTAMP*>(fieldData);
-                unsigned year, month, day;
-                unsigned hours, minutes, seconds, fractions;
+                unsigned year = 0, month = 0, day = 0;
+                unsigned hours = 0, minutes = 0, seconds = 0, fractions = 0;
                 applier->getUtil()->decodeDate(value.timestamp_date, &year, &month, &day);
                 applier->getUtil()->decodeTime(value.timestamp_time, &hours, &minutes, &seconds, &fractions);
                 const auto val = FbUtils::vformat("%04d-%02d-%02d %02d:%02d:%02d.%d", year, month, day, hours, minutes, seconds, fractions);
@@ -253,7 +254,7 @@ void dumpRecord(ThrowStatusWrapper* status, SimpleJsonPlugin::SimpleJsonStreamPl
             }
             case SQL_TYPE_DATE: {
                 const auto value = *reinterpret_cast<const ISC_DATE*>(fieldData);
-                unsigned year, month, day;
+                unsigned year = 0, month = 0, day = 0;
                 applier->getUtil()->decodeDate(value, &year, &month, &day);
                 const auto val = FbUtils::vformat("%04d-%02d-%02d", year, month, day);
                 jRecord[fieldName] = val;
@@ -261,7 +262,7 @@ void dumpRecord(ThrowStatusWrapper* status, SimpleJsonPlugin::SimpleJsonStreamPl
             }
             case SQL_TYPE_TIME: {
                 const auto value = *reinterpret_cast<const ISC_TIME*>(fieldData);
-                unsigned hours, minutes, seconds, fractions;
+                unsigned hours = 0, minutes = 0, seconds = 0, fractions = 0;
                 applier->getUtil()->decodeTime(value, &hours, &minutes, &seconds, &fractions);
                 const auto val = FbUtils::vformat("%02d:%02d:%02d.%d", hours, minutes, seconds, fractions);
                 jRecord[fieldName] = val;
@@ -269,18 +270,18 @@ void dumpRecord(ThrowStatusWrapper* status, SimpleJsonPlugin::SimpleJsonStreamPl
             }
             case SQL_TIMESTAMP_TZ: {
                 const auto value = reinterpret_cast<const ISC_TIMESTAMP_TZ*>(fieldData);
-                unsigned year, month, day;
-                unsigned hours, minutes, seconds, fractions;
-                char timezoneBuffer[252];
+                unsigned year = 0, month = 0, day = 0;
+                unsigned hours = 0, minutes = 0, seconds = 0, fractions = 0;
+                char timezoneBuffer[252] = { '\0' };
                 applier->getUtil()->decodeTimeStampTz(status, value, &year, &month, &day, &hours, &minutes, &seconds, &fractions, 252, timezoneBuffer);
-                const auto val = FbUtils::vformat("%04d-%02d-%02d %02d:%02d:%02d.%d %s", year, month, day, hours, minutes, seconds, fractions);
+                const auto val = FbUtils::vformat("%04d-%02d-%02d %02d:%02d:%02d.%d %s", year, month, day, hours, minutes, seconds, fractions, timezoneBuffer);
                 jRecord[fieldName] = val;
                 break;
             }
             case SQL_TIME_TZ: {
                 const auto value = reinterpret_cast<const ISC_TIME_TZ*>(fieldData);
-                unsigned hours, minutes, seconds, fractions;
-                char timezoneBuffer[252];
+                unsigned hours = 0, minutes = 0, seconds = 0, fractions = 0;
+                char timezoneBuffer[252] = { '\0' };
                 applier->getUtil()->decodeTimeTz(status, value, &hours, &minutes, &seconds, &fractions, 252, timezoneBuffer);
                 const auto val = FbUtils::vformat("%02d:%02d:%02d.%d %s", hours, minutes, seconds, fractions, timezoneBuffer);
                 jRecord[fieldName] = val;
@@ -295,21 +296,21 @@ void dumpRecord(ThrowStatusWrapper* status, SimpleJsonPlugin::SimpleJsonStreamPl
             case SQL_DEC16: {
                 auto value = reinterpret_cast<const FB_DEC16*>(fieldData);
                 const auto iDecFloat16 = applier->getUtil()->getDecFloat16(status);
-                char buffer[IDecFloat16::STRING_SIZE];
+                char buffer[IDecFloat16::STRING_SIZE] = { ' ' };
                 iDecFloat16->toString(status, value, IDecFloat16::STRING_SIZE, buffer);
-                std::string s(buffer);
-                const auto val = FbUtils::rtrim(s);
-                jRecord[fieldName] = val;
+                std::string_view s(buffer, IDecFloat16::STRING_SIZE);
+                s = FbUtils::sv_rtrim_char(s);
+                jRecord[fieldName] = s;
                 break;
             }
             case SQL_DEC34: {
                 auto value = reinterpret_cast<const FB_DEC34*>(fieldData);
                 const auto iDecFloat34 = applier->getUtil()->getDecFloat34(status);
-                char buffer[IDecFloat34::STRING_SIZE];
+                char buffer[IDecFloat34::STRING_SIZE] = { ' ' };
                 iDecFloat34->toString(status, value, IDecFloat34::STRING_SIZE, buffer);
-                std::string s(buffer);
-                const auto val = FbUtils::rtrim(s);
-                jRecord[fieldName] = val;
+                std::string_view s(buffer, IDecFloat34::STRING_SIZE);
+                s = FbUtils::sv_rtrim_char(s);
+                jRecord[fieldName] = s;
                 break;
             }
             case SQL_BLOB: {
@@ -664,10 +665,10 @@ FB_BOOLEAN SimpleJsonStreamPlugin::init(ThrowStatusWrapper* status, IAttachment*
         }
     }
 
-    AutoRelease<IConfigEntry> ceExludeTables(m_config->find(status, "exclude_tables"));
-    if (ceExludeTables) {
+    AutoRelease<IConfigEntry> ceExcludeTables(m_config->find(status, "exclude_tables"));
+    if (ceExcludeTables) {
         try {
-            m_exclude_tables = std::make_unique<std::regex>(ceExludeTables->getValue());
+            m_exclude_tables = std::make_unique<std::regex>(ceExcludeTables->getValue());
         } catch (const std::regex_error& e) {
             IscRandomStatus statusVector(e);
             throw Firebird::FbException(status, statusVector);
@@ -728,10 +729,10 @@ try {
     throw Firebird::FbException(status, statusVector);
 }
 
-void SimpleJsonStreamPlugin::startBlock([[maybe_unused]] ThrowStatusWrapper* status, [[maybe_unused]] unsigned blockOffset)
+void SimpleJsonStreamPlugin::startBlock([[maybe_unused]] ThrowStatusWrapper* status, [[maybe_unused]] ISC_UINT64 blockOffset, [[maybe_unused]] unsigned blockLength)
 {}
 
-void SimpleJsonStreamPlugin::setSegmentOffset([[maybe_unused]] unsigned offset)
+void SimpleJsonStreamPlugin::setSegmentOffset([[maybe_unused]] ISC_UINT64 offset)
 {}
 
 IStreamedTransaction* SimpleJsonStreamPlugin::startTransaction(ThrowStatusWrapper* status, ISC_INT64 number)
@@ -827,13 +828,14 @@ void SimpleJsonStreamPlugin::log(unsigned level, const char* message)
     m_logger->log(level, message);
 }
 
-std::string SimpleJsonStreamPlugin::toUtf8(ThrowStatusWrapper* status, unsigned charsetId, const std::string& s)
+std::string SimpleJsonStreamPlugin::toUtf8(ThrowStatusWrapper* status, unsigned charsetId, std::string_view s)
 try {
     auto [it, result] = m_encodingConverters.try_emplace(
         charsetId,
         lazy_convert_construct([charsetId, status, this] {
-            return std::move(m_stringEncoder.getConverterById(status, charsetId));
-        }));
+            return m_stringEncoder.getConverterById(status, charsetId);
+        })
+    );
     return it->second.toUtf8(status, s);
 } catch (const std::exception& e) {
     IscRandomStatus statusVector(e);

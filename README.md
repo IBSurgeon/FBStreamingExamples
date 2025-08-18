@@ -16,8 +16,8 @@ As an example of a plugin, let's consider a simple library that will translate t
 
 You can download the compiled example with configuration from the links:
 
-* [SimpleJsonPlugin_Win_x64.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.5/simple_json_plugin-1.5.3-Win-x64.zip)
-* [SimpleJsonPlugin_Win_x86.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.5/simple_json_plugin-1.5.3-Win-x86.zip)
+* [SimpleJsonPlugin_Win_x64.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.6/simple_json_plugin-1.6.0-Win-x64.zip)
+* [SimpleJsonPlugin_Win_x86.zip](https://github.com/IBSurgeon/FBStreamingExamples/releases/download/1.6/simple_json_plugin-1.6.0-Win-x86.zip)
 
 ## Description of the simple_json_plugin
 

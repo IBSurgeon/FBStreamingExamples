@@ -303,11 +303,11 @@ It might contain something like
 
 ```
 fb-repl-server (replica) Mon Jul 29 13:15:05 2024
-	Database: /var/fbdata/mydb.fdb
-	ERROR: violation of FOREIGN KEY constraint "FK_TRIAL_LINE_REF_HORSE" on table "TRIAL_LINE"
-	Foreign key reference target does not exist
-	Problematic key value is ("CODE_HORSE" = 12345)
-	At segment 106, offset 130012
+    Database: /var/fbdata/mydb.fdb
+    ERROR: violation of FOREIGN KEY constraint "FK_TRIAL_LINE_REF_HORSE" on table "TRIAL_LINE"
+    Foreign key reference target does not exist
+    Problematic key value is ("CODE_HORSE" = 12345)
+    At segment 106, offset 130012
 ```
 
 In this case, you can look at the contents of segment `106` using `fb_repl_print` and find the location of the error by `offset` equal to `130012`.

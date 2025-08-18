@@ -1876,8 +1876,8 @@ interface StreamPlugin : PluginBase
 	void finish(Status status);
 	void startSegment(Status status, SegmentHeaderInfo* segmentHeader);
 	void finishSegment(Status status);
-	void startBlock(Status status, uint blockOffset);
-	void setSegmentOffset(uint offset);
+	void startBlock(Status status, uint64 blockOffset, uint blockLength);
+	void setSegmentOffset(uint64 offset);
 	StreamedTransaction startTransaction(Status status, int64 number);
 	void setSequence(Status status, const string name, int64 value);
 	boolean matchTable(Status status, const string relationName);

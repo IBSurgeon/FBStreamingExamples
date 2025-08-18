@@ -306,11 +306,11 @@ BLOCK (offset 10078)
 
 ```
 fb-repl-server (replica) Mon Jul 29 13:15:05 2024
-	Database: /var/fbdata/mydb.fdb
-	ERROR: violation of FOREIGN KEY constraint "FK_TRIAL_LINE_REF_HORSE" on table "TRIAL_LINE"
-	Foreign key reference target does not exist
-	Problematic key value is ("CODE_HORSE" = 12345)
-	At segment 106, offset 130012
+    Database: /var/fbdata/mydb.fdb
+    ERROR: violation of FOREIGN KEY constraint "FK_TRIAL_LINE_REF_HORSE" on table "TRIAL_LINE"
+    Foreign key reference target does not exist
+    Problematic key value is ("CODE_HORSE" = 12345)
+    At segment 106, offset 130012
 ```
 
 В этом случае вы можете посмотреть содержимое сегмента `106` с помощью `fb_repl_print` и найти место возникновения ошибки по `offset` равному `130012`.

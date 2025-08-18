@@ -91,6 +91,11 @@ namespace FbUtils
     std::string rtrim(const std::string& s);
     std::string rtrim(const std::string& s, const char* ch);
     std::wstring rtrim(const std::wstring& s);
+
+    std::string_view sv_rtrim(std::string_view str) noexcept;
+    std::string_view sv_ltrim(std::string_view str) noexcept;
+    std::string_view sv_trim(std::string_view str) noexcept;
+
     std::string replace_first(const std::string& str, std::string_view what, std::string_view replacement);
 
     std::string binary_to_hex(const unsigned char* data, size_t size);
@@ -110,6 +115,14 @@ namespace FbUtils
     bool readBoolFromConfig(Firebird::ThrowStatusWrapper* status, Firebird::IConfig* config, const char* name, bool defaultValue = false);
     int64_t readIntFromConfig(Firebird::ThrowStatusWrapper* status, Firebird::IConfig* config, const char* name, int64_t defaultValue = 0);
     std::string readStringFromConfig(Firebird::ThrowStatusWrapper* status, Firebird::IConfig* config, const char* name, const std::string defaultValue = {});
+
+    inline constexpr std::string_view sv_rtrim_char(std::string_view str, char ch = ' ') noexcept
+    {
+        if (auto pos = str.find_last_not_of(ch); pos != std::string::npos) {
+            str.remove_suffix(str.length() - pos - 1);
+        }
+        return str;
+    }
 
 }
 

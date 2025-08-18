@@ -40,8 +40,8 @@ namespace MyPlugin {
         void finish(Firebird::ThrowStatusWrapper* status) override;
         void startSegment(Firebird::ThrowStatusWrapper* status, SegmentHeaderInfo* segmentHeader) override;
         void finishSegment(Firebird::ThrowStatusWrapper* status) override;
-        void startBlock(Firebird::ThrowStatusWrapper* status, unsigned blockOffset) override;
-        void setSegmentOffset(unsigned offset) override;
+        void startBlock(ThrowStatusWrapper* status, ISC_UINT64 blockOffset, unsigned blockLength) override;
+        void setSegmentOffset(ISC_UINT64 offset) override;
         Firebird::IStreamedTransaction* startTransaction(Firebird::ThrowStatusWrapper* status, ISC_INT64 number) override;
         void setSequence(Firebird::ThrowStatusWrapper* status, const char* name, ISC_INT64 value) override;
         FB_BOOLEAN matchTable(Firebird::ThrowStatusWrapper* status, const char* relationName) override;
@@ -115,9 +115,9 @@ extern "C" {
 
     FB_DLL_EXPORT void fb_stream_plugin(IMaster* master, IStreamPluginManager* pm)
     {
-        // создание фабрики для регистрации плагина
+        // creating a factory to register a plugin
         auto factory = new MyPlugin::MyStreamPluginFactory(master);
-        // регистрируем плагин с именем "my_plugin"
+        // registering a plugin named "my_plugin"
         pm->registerPluginFactory("my_plugin", factory);
     }
 } // extern C
@@ -197,7 +197,7 @@ The `finishSegment` function is designed to handle the event of completion of re
 ### `startBlock` function
 
 ```cpp
-void startBlock(ThrowStatusWrapper* status, unsigned blockOffset) override;
+void startBlock(ThrowStatusWrapper* status, ISC_UINT64 blockOffset, unsigned blockLength) override;
 ```
 
 The `startBlock` function is designed to handle the event of the start of a block in the replication segment file. Usually, events are not sent to the file one by one, but in whole blocks. If the transaction is short enough, the start and end of the block coincide with the start and end of the transaction. In your plugins, you will most likely make this method a stub. It is used in the `fb_repl_print` application to print information about the start of a block.
@@ -205,7 +205,7 @@ The `startBlock` function is designed to handle the event of the start of a bloc
 ### `setSegmentOffset` function
 
 ```cpp
-void setSegmentOffset(unsigned offset) override;
+void setSegmentOffset(ISC_UINT64 offset) override;
 ```
 
 Saves the offset (in bytes) from the replication segment file. In most plugins, this method is simply a stub. However, it is used in the `fb_repl_print` application to specify the offset for each event when printing.

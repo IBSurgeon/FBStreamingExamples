@@ -318,8 +318,8 @@ namespace Firebird {
 			void (CLOOP_CARG* finish)(IStreamPlugin* self, IStatus* status) CLOOP_NOEXCEPT;
 			void (CLOOP_CARG* startSegment)(IStreamPlugin* self, IStatus* status, SegmentHeaderInfo* segmentHeader) CLOOP_NOEXCEPT;
 			void (CLOOP_CARG* finishSegment)(IStreamPlugin* self, IStatus* status) CLOOP_NOEXCEPT;
-			void (CLOOP_CARG *startBlock)(IStreamPlugin* self, IStatus* status, unsigned blockOffset) CLOOP_NOEXCEPT;
-			void (CLOOP_CARG *setSegmentOffset)(IStreamPlugin* self, unsigned offset) CLOOP_NOEXCEPT;
+			void (CLOOP_CARG *startBlock)(IStreamPlugin* self, IStatus* status, ISC_UINT64 blockOffset, unsigned blockLength) CLOOP_NOEXCEPT;
+			void (CLOOP_CARG *setSegmentOffset)(IStreamPlugin* self, ISC_UINT64 offset) CLOOP_NOEXCEPT;
 			IStreamedTransaction* (CLOOP_CARG* startTransaction)(IStreamPlugin* self, IStatus* status, ISC_INT64 number) CLOOP_NOEXCEPT;
 			void (CLOOP_CARG* setSequence)(IStreamPlugin* self, IStatus* status, const char* name, ISC_INT64 value) CLOOP_NOEXCEPT;
 			FB_BOOLEAN(CLOOP_CARG* matchTable)(IStreamPlugin* self, IStatus* status, const char* relationName) CLOOP_NOEXCEPT;
@@ -371,14 +371,14 @@ namespace Firebird {
 			StatusType::checkException(status);
 		}
 
-		template <typename StatusType> void startBlock(StatusType* status, unsigned blockOffset)
+		template <typename StatusType> void startBlock(StatusType* status, ISC_UINT64 blockOffset, unsigned blockLength)
 		{
 			StatusType::clearException(status);
-			static_cast<VTable*>(this->cloopVTable)->startBlock(this, status, blockOffset);
+			static_cast<VTable*>(this->cloopVTable)->startBlock(this, status, blockOffset, blockLength);
 			StatusType::checkException(status);
 		}
 
-		void setSegmentOffset(unsigned offset)
+		void setSegmentOffset(ISC_UINT64 offset)
 		{
 			static_cast<VTable*>(this->cloopVTable)->setSegmentOffset(this, offset);
 		}
@@ -1475,13 +1475,13 @@ namespace Firebird {
 			}
 		}
 		
-		static void CLOOP_CARG cloopstartBlockDispatcher(IStreamPlugin* self, IStatus* status, unsigned blockOffset) CLOOP_NOEXCEPT
+		static void CLOOP_CARG cloopstartBlockDispatcher(IStreamPlugin* self, IStatus* status, ISC_UINT64 blockOffset, unsigned blockLength) CLOOP_NOEXCEPT
 		{
 			StatusType status2(status);
 
 			try
 			{
-				static_cast<Name*>(self)->Name::startBlock(&status2, blockOffset);
+				static_cast<Name*>(self)->Name::startBlock(&status2, blockOffset, blockLength);
 			}
 			catch (...)
 			{
@@ -1489,7 +1489,7 @@ namespace Firebird {
 			}
 		}
 
-		static void CLOOP_CARG cloopsetSegmentOffsetDispatcher(IStreamPlugin* self, unsigned offset) CLOOP_NOEXCEPT
+		static void CLOOP_CARG cloopsetSegmentOffsetDispatcher(IStreamPlugin* self, ISC_UINT64 offset) CLOOP_NOEXCEPT
 		{
 			try
 			{
@@ -1668,8 +1668,8 @@ namespace Firebird {
 		virtual void finish(StatusType* status) = 0;
 		virtual void startSegment(StatusType* status, SegmentHeaderInfo* segmentHeader) = 0;
 		virtual void finishSegment(StatusType* status) = 0;
-		virtual void startBlock(StatusType* status, unsigned blockOffset) = 0;
-		virtual void setSegmentOffset(unsigned offset) = 0;
+		virtual void startBlock(StatusType* status, ISC_UINT64 blockOffset, unsigned blockLength) = 0;
+		virtual void setSegmentOffset(ISC_UINT64 offset) = 0;
 		virtual IStreamedTransaction* startTransaction(StatusType* status, ISC_INT64 number) = 0;
 		virtual void setSequence(StatusType* status, const char* name, ISC_INT64 value) = 0;
 		virtual FB_BOOLEAN matchTable(StatusType* status, const char* relationName) = 0;
